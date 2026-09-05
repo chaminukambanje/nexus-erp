@@ -11,6 +11,7 @@ services:
     restart: unless-stopped
     ports:
       - "8080:80"
+      - "3000:80"
     environment:
       - NODE_ENV=production
     healthcheck:
