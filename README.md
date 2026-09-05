@@ -1,39 +1,138 @@
-**Welcome to your Base44 project** 
+# NexusERP 365 — Open Enterprise ERP Suite
 
-**About**
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg?logo=docker)](docker-compose.yml)
+[![License](https://img.shields.io/badge/Edition-Unrestricted%20Enterprise-success.svg)](#)
+[![D365 Compatible](https://img.shields.io/badge/Compatibility-Dynamics%20365%20BC%20%26%20F%26O-0078D4.svg?logo=microsoft)](https://learn.microsoft.com/en-gb/dynamics365/business-central/)
 
-View and Edit  your app on [Base44.com](http://Base44.com) 
+**NexusERP 365** is a full-featured, open enterprise resource planning suite designed to mirror the capabilities of **Microsoft Dynamics 365 Business Central** and **Dynamics 365 Finance & Operations** — without commercial seat licenses, per-user limits, or proprietary tier gates.
 
-This project contains everything you need to run your app locally.
+---
 
-**Edit the code in your local development environment**
+## 🚀 Key Modules & Capabilities
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
+### 1. Financial Management (D365 BC / F&O General Ledger)
+* **General Ledger & Chart of Accounts**: Account hierarchies, category rollups, debit/credit tracking, and live trial balances.
+* **Global & Shortcut Dimensions**: Multi-dimensional financial segmentation (Department, CustomerGroup, Project, Area).
+* **Multi-Currency & Exchange Rates**: Automated foreign exchange revaluation and currency conversion (GBP, USD, EUR).
+* **Bank Reconciliation**: Automated statement matching, reconciliation journals, and difference balancing.
+* **Posting Groups & Fixed Assets**: Automated subledger-to-GL posting and asset depreciation schedules.
+* **Budgets & Financial Reporting**: Real-time balance sheets, income statements, and segment variance analysis.
 
-**Prerequisites:** 
+### 2. Supply Chain & Advanced Warehouse Management (WMS)
+* **Locations, Zones & Bins**: Staging, bulk storage, pick faces, and cross-docking zones.
+* **Warehouse Receipts & Put-aways**: Inbound staging with bin allocation and status control.
+* **Directed Picking & Shipments**: Wave picking, staged dispatch, and order fulfillment.
+* **Item Tracking (Serial & Lot/Batch Numbers)**: Full traceability, batch expiration dates, warranty management, and audit inspection.
+* **Inventory Counting & Physical Journals**: Cyclical stock audits, automated variance calculation, and GL adjustments.
 
-1. Clone the repository using the project's Git URL 
-2. Navigate to the project directory
-3. Install dependencies: `npm install`
-4. Create an `.env.local` file and set the right environment variables
+### 3. Manufacturing & Material Requirements Planning (MRP)
+* **Multi-Level Bills of Materials (BOM)**: Version-controlled component structures with scrap percentages.
+* **Work & Machine Centers**: Production lines with run/setup capacities, hourly costing, and efficiency metrics.
+* **Production Orders**: Full lifecycle management across Simulated, Planned, Firm Planned, Released, and Finished states.
+* **MRP / MPS Regenerative Engine**: Automated demand net-off calculating purchase requisitions and production orders to prevent stockouts.
+
+### 4. Order-to-Cash & Procure-to-Pay
+* **Sales Quotes, Orders, Shipments & Invoices**: Multi-stage order fulfillment with automated posting.
+* **Customer Price Lists**: Customer-tier specific pricing and volume discount matrix.
+* **Purchase Requisitions & Approvals**: Requisition limit governance with hierarchy approval workflows.
+* **3-Way Matching**: Automated reconciliation of Purchase Order vs. Goods Receipt vs. Vendor Invoice.
+* **Credit Memos & Returns**: Automated inventory replenishment and credit memo postings.
+
+### 5. Governance, Services & Projects
+* **Approval Workflows**: Matrix approval limits with auditable delegation.
+* **Service Contracts & SLAs**: Response-time management and recurring service billing.
+* **Job & Project Accounting**: Time, material, and fixed-price cost accounting.
+
+### 6. Role Centers & Copilot AI Assistant
+* **Personalized Role Centers**: Workspaces customized for *Business Manager*, *Financial Controller*, *Sales Order Processor*, *Purchasing Agent*, *Warehouse Manager*, and *Manufacturing Planner*.
+* **Embedded D365 Copilot**: Natural language AI assistant to query ledger metrics, check inventory availability, and run MRP actions.
+* **Multi-Company Architecture**: Switch instantly between legal entities:
+  * 🇬🇧 **CRONUS UK Ltd.** (GBP)
+  * 🇺🇸 **Contoso US Inc.** (USD)
+  * 🇪🇺 **Fabrikam Europe BV** (EUR)
+
+---
+
+## 🐳 Quick Start with Docker
+
+### Prerequisites
+* [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/chaminukambanje/nexus-erp.git
+cd nexus-erp
+```
+
+### 2. Run with Docker Compose
+```bash
+docker compose up -d --build
+```
+
+### 3. Access the Application
+The ERP container is pre-configured and exposed on two convenient ports:
+* **Role Center**: [http://localhost:8080/role-center](http://localhost:8080/role-center) or [http://localhost:3000/role-center](http://localhost:3000/role-center)
+* **Main Dashboard**: [http://localhost:8080](http://localhost:8080) or [http://localhost:3000](http://localhost:3000)
+
+---
+
+## 🛠 Local Development (Vite + React)
+
+```bash
+# Install dependencies
+npm install --legacy-peer-deps
+
+# Run development server
+npm run dev
+```
+
+App will be available at `http://localhost:5173`.
+
+---
+
+## 📁 Repository Structure
 
 ```
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=your_backend_url
-
-e.g.
-VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
-VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
+nexus-erp/
+├── Dockerfile                  # Multi-stage production container build
+├── docker-compose.yml          # Container orchestration (ports 8080 & 3000, healthchecks)
+├── nginx.conf                  # Nginx configuration with IPv6 support, SPA routing & reverse proxy
+├── package.json
+├── src/
+│   ├── api/
+│   │   ├── base44Client.js     # Base44 SDK Proxy client with failover
+│   │   └── erpDataEngine.js    # Multi-company store & D365 business logic engine
+│   ├── components/
+│   │   ├── layout/             # Sidebar, Header, AppLayout, CopilotAssistant
+│   │   └── ui/                 # Radix / Tailwind UI components
+│   ├── pages/                  # D365 BC & F&O Modules:
+│   │   ├── RoleCenter.jsx      # Role-based executive workspace
+│   │   ├── Dimensions.jsx      # Global & shortcut financial dimensions
+│   │   ├── Currencies.jsx      # FX exchange rates & revaluations
+│   │   ├── BankReconciliation.jsx
+│   │   ├── Warehouses.jsx      # Locations & bin zones
+│   │   ├── WarehouseReceipts.jsx
+│   │   ├── WarehousePicks.jsx
+│   │   ├── ItemTracking.jsx    # Serial / Lot tracking
+│   │   ├── InventoryCounting.jsx
+│   │   ├── ManufacturingBOM.jsx
+│   │   ├── WorkCenters.jsx
+│   │   ├── ProductionOrders.jsx
+│   │   ├── MRPPlanning.jsx     # MRP regenerative engine
+│   │   ├── PurchaseRequisitions.jsx
+│   │   ├── ThreeWayMatching.jsx
+│   │   ├── SalesShipments.jsx
+│   │   ├── CustomerPriceLists.jsx
+│   │   ├── ServiceContracts.jsx
+│   │   └── ApprovalWorkflows.jsx
+│   └── App.jsx                 # Route registrations & auth provider
+└── README.md
 ```
 
-Run the app: `npm run dev`
+---
 
-**Publish your changes**
+## 📄 License & Restrictions
 
-Open [Base44.com](http://Base44.com) and click on Publish.
+* **License**: Unrestricted Enterprise Edition.
+* **User Limits**: Unlimited users, no commercial seat licenses required.
 
-**Docs & Support**
-
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
-
-Support: [https://app.base44.com/support](https://app.base44.com/support)
