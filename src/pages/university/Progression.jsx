@@ -2,20 +2,27 @@ import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Progress } from '@/components/ui/progress';
 import PageHeader from '@/components/shared/PageHeader';
 import DataTable from '@/components/shared/DataTable';
 import StatusBadge from '@/components/shared/StatusBadge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { TrendingUp, CheckCircle, XCircle, RefreshCcw, GraduationCap, AlertTriangle, ChevronRight } from 'lucide-react';
+import { TrendingUp, CheckCircle, XCircle, RefreshCcw, GraduationCap, AlertTriangle, ChevronRight, Sparkles, ShieldCheck, UserCheck, Workflow, Landmark, FileText, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/components/ui/use-toast';
+import { Link } from 'react-router-dom';
+import {
+  calculateMITGPA,
+  auditMITGIRProgress,
+  evaluateMITCAPStanding
+} from '@/lib/academicUtils';
 
 export default function Progression() {
   const qc = useQueryClient();
@@ -28,6 +35,7 @@ export default function Progression() {
 
   const { data: students = [] } = useQuery({ queryKey: ['students'], queryFn: () => base44.entities.Student.list() });
   const { data: enrollments = [] } = useQuery({ queryKey: ['enrollments'], queryFn: () => base44.entities.Enrollment.list() });
+  const { data: courses = [] } = useQuery({ queryKey: ['courses'], queryFn: () => base44.entities.Course.list() });
   const { data: programmes = [] } = useQuery({ queryKey: ['programmes'], queryFn: () => base44.entities.Programme.list() });
   const { data: decisions = [], isLoading } = useQuery({ queryKey: ['progressionDecisions'], queryFn: () => base44.entities.ProgressionDecision.list('-decision_date', 500) });
 
@@ -57,10 +65,23 @@ export default function Progression() {
     onSuccess: () => { qc.invalidateQueries(['progressionDecisions']); qc.invalidateQueries(['students']); setConfirmDialog(null); toast({ title: 'Decision recorded' }); }
   });
 
+  const updateCapStandingMutation = useMutation({
+    mutationFn: async ({ studentId, standing, label }) => {
+      return base44.entities.Student.update(studentId, {
+        cap_standing: standing,
+        cap_status_label: label
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries(['students']);
+      toast({ title: 'MIT CAP Standing updated successfully' });
+    }
+  });
+
   // Compute eligible students for the selected year and academic year
   const eligibleStudents = useMemo(() => {
     return students
-      .filter(s => s.status === 'active' && s.current_year === parseInt(fromYear) && (!selectedProg || s.programme_id === selectedProg))
+      .filter(s => s.status === 'enrolled' && s.current_year === parseInt(fromYear) && (!selectedProg || s.programme_id === selectedProg))
       .map(student => {
         const prog = programmes.find(p => p.id === student.programme_id);
         const stuEnrollments = enrollments.filter(e => e.student_id === student.id && e.academic_year === academicYear && e.year_level === parseInt(fromYear));
@@ -70,7 +91,7 @@ export default function Progression() {
         const supp = stuEnrollments.filter(e => e.result === 'supplementary');
         const scores = completed.map(e => e.final_score).filter(x => x != null);
         const avg = scores.length > 0 ? scores.reduce((s, x) => s + x, 0) / scores.length : null;
-        const totalCredits = passed.reduce((s, e) => s + (/* placeholder */ 15), 0);
+        const totalCredits = passed.reduce((s, e) => s + 15, 0);
         const alreadyDecided = decisions.some(d => d.student_id === student.id && d.academic_year === academicYear && d.from_year === parseInt(fromYear));
 
         // Automatic recommendation
@@ -89,6 +110,23 @@ export default function Progression() {
       });
   }, [students, enrollments, programmes, decisions, fromYear, selectedProg, academicYear]);
 
+  // MIT CAP Evaluations
+  const mitCapList = useMemo(() => {
+    return students.map(student => {
+      const stuEnrollments = enrollments.filter(e => e.student_id === student.id);
+      const mitGpa = calculateMITGPA(stuEnrollments);
+      const girAudit = auditMITGIRProgress(stuEnrollments, courses);
+      const capEval = evaluateMITCAPStanding(student, stuEnrollments);
+      return {
+        student,
+        stuEnrollments,
+        mitGpa,
+        girAudit,
+        capEval
+      };
+    });
+  }, [students, enrollments, courses]);
+
   const decisionHistory = decisions.filter(d => !selectedProg || d.programme_id === selectedProg);
 
   const recColor = (r) => ({ progress: 'text-emerald-600', graduate: 'text-indigo-600', repeat_year: 'text-yellow-600', exclude: 'text-red-600', pending: 'text-muted-foreground' }[r] || '');
@@ -98,41 +136,207 @@ export default function Progression() {
     { header: 'Student', render: r => <div><p className="font-medium">{r.student_name}</p><p className="text-xs text-muted-foreground">{r.student_number}</p></div> },
     { header: 'Programme', render: r => <span className="text-sm">{r.programme_name}</span> },
     { header: 'Year', render: r => <span className="text-sm">Year {r.from_year} → {r.to_year}</span> },
-    { header: 'Academic Year', render: r => <span className="text-sm">{r.academic_year}</span> },
-    { header: 'Avg', render: r => <span className="font-medium">{r.year_average != null ? `${r.year_average.toFixed(1)}%` : '—'}</span> },
-    { header: 'Failed', render: r => <span className={`font-medium ${r.modules_failed > 0 ? 'text-red-600' : 'text-emerald-600'}`}>{r.modules_failed}</span> },
-    { header: 'Decision', render: r => <Badge variant={r.decision === 'progress' || r.decision === 'graduate' ? 'default' : r.decision === 'exclude' ? 'destructive' : 'secondary'} className="capitalize">{r.decision?.replace(/_/g, ' ')}</Badge> },
+    { header: 'Decision', render: r => <StatusBadge status={r.decision} /> },
+    { header: 'Average', render: r => <span className="text-sm font-semibold">{r.year_average != null ? `${r.year_average.toFixed(1)}%` : '—'}</span> },
+    { header: 'Credits', render: r => <span className="text-sm">{r.total_credits_passed}</span> },
     { header: 'Date', render: r => <span className="text-sm">{r.decision_date ? format(new Date(r.decision_date), 'MMM d, yyyy') : '—'}</span> },
     { header: 'By', render: r => <span className="text-sm text-muted-foreground">{r.decided_by}</span> },
   ];
 
   return (
-    <div className="p-6 lg:p-8 max-w-[1400px] space-y-6">
-      <PageHeader title="Progression & Graduation" subtitle="Evaluate students for year progression and graduation" />
+    <div className="p-6 lg:p-8 max-w-[1500px] space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold font-heading">Progression & Academic Standing</h1>
+          <p className="text-xs text-muted-foreground mt-1">
+            Committee on Academic Performance (CAP) 5.0 evaluations, General Institute Requirements progress, and Annual Board decisions
+          </p>
+        </div>
+        <Button asChild size="sm" variant="outline" className="gap-1.5 text-xs">
+          <Link to="/university/lifecycle">
+            <Workflow className="w-3.5 h-3.5 text-primary" />
+            MIT Student Lifecycle View
+          </Link>
+        </Button>
+      </div>
 
-      <Tabs defaultValue="evaluation">
+      <Tabs defaultValue="mit_cap">
         <TabsList>
-          <TabsTrigger value="evaluation">Year-End Evaluation</TabsTrigger>
-          <TabsTrigger value="history">Decision History</TabsTrigger>
+          <TabsTrigger value="mit_cap" className="gap-1.5 text-xs">
+            <Sparkles className="w-3.5 h-3.5 text-primary" /> MIT CAP Standing (5.0 Scale & GIRs)
+          </TabsTrigger>
+          <TabsTrigger value="evaluation" className="text-xs">Annual Board Progression</TabsTrigger>
+          <TabsTrigger value="history" className="text-xs">Decision History</TabsTrigger>
         </TabsList>
+
+        {/* MIT CAP Standing & GIR Progress View */}
+        <TabsContent value="mit_cap" className="mt-4 space-y-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <Card><CardContent className="pt-4 pb-4">
+              <p className="text-xs text-muted-foreground">Total Cohort</p>
+              <p className="text-2xl font-bold mt-1 text-foreground">{students.length}</p>
+            </CardContent></Card>
+            <Card><CardContent className="pt-4 pb-4">
+              <p className="text-xs text-muted-foreground">Dean's List / High Standing</p>
+              <p className="text-2xl font-bold mt-1 text-indigo-600">
+                {mitCapList.filter(item => item.capEval.status === 'dean_list' || item.student.cap_standing === 'dean_list').length}
+              </p>
+            </CardContent></Card>
+            <Card><CardContent className="pt-4 pb-4">
+              <p className="text-xs text-muted-foreground">Good Standing</p>
+              <p className="text-2xl font-bold mt-1 text-emerald-600">
+                {mitCapList.filter(item => item.capEval.status === 'good_standing' || item.student.cap_standing === 'good_standing').length}
+              </p>
+            </CardContent></Card>
+            <Card><CardContent className="pt-4 pb-4">
+              <p className="text-xs text-muted-foreground">CAP Review / Warning</p>
+              <p className="text-2xl font-bold mt-1 text-amber-600">
+                {mitCapList.filter(item => item.capEval.status === 'cap_warning' || item.student.cap_standing === 'cap_warning').length}
+              </p>
+            </CardContent></Card>
+          </div>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Landmark className="w-4 h-4 text-primary" />
+                  Committee on Academic Performance (CAP) Review Roster
+                </span>
+                <span className="text-xs font-normal text-muted-foreground">
+                  Evaluated under MIT Faculty Rules & 5.0 Rating Standards
+                </span>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Reviews undergraduate term ratings, flags credit restrictions (max 48 units under warning), and audits 17 GIRs progress
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-y bg-muted/40 text-muted-foreground text-left">
+                      <th className="py-2.5 px-4 font-semibold">Student & Kerberos</th>
+                      <th className="py-2.5 px-3 font-semibold">Course Major</th>
+                      <th className="py-2.5 px-3 font-semibold text-center">Year / Term</th>
+                      <th className="py-2.5 px-3 font-semibold text-center">Cumulative 5.0</th>
+                      <th className="py-2.5 px-3 font-semibold">GIR Completion</th>
+                      <th className="py-2.5 px-3 font-semibold text-center">CAP Standing</th>
+                      <th className="py-2.5 px-4 font-semibold text-right">Committee Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {mitCapList.map(({ student, mitGpa, girAudit, capEval }) => {
+                      const standingStatus = student.cap_standing || capEval.status;
+                      const standingBadgeClass = standingStatus === 'dean_list'
+                        ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 border-indigo-200'
+                        : standingStatus === 'cap_warning'
+                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-200'
+                          : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-200';
+
+                      const standingLabel = standingStatus === 'dean_list'
+                        ? "Dean's List"
+                        : standingStatus === 'cap_warning'
+                          ? 'CAP Warning (48u Cap)'
+                          : 'Good Standing';
+
+                      return (
+                        <tr key={student.id} className="hover:bg-muted/30 transition-colors">
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-semibold text-foreground">{student.first_name} {student.last_name}</span>
+                              {student.urop_active && (
+                                <Badge variant="outline" className="text-[9px] px-1 py-0 bg-purple-500/10 text-purple-600 border-purple-300">
+                                  UROP
+                                </Badge>
+                              )}
+                            </div>
+                            <span className="text-[11px] font-mono text-muted-foreground block mt-0.5">
+                              MIT ID: {student.mit_id || student.student_number} · {student.kerberos_id ? `@${student.kerberos_id}` : student.email}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3">
+                            <span className="font-medium text-foreground block">{student.declared_major || student.programme_name || 'Course 0 (Undeclared)'}</span>
+                            <span className="text-[10px] text-muted-foreground">{student.first_year_advisor || student.departmental_advisor || 'Faculty Advisor Assigned'}</span>
+                          </td>
+                          <td className="py-3 px-3 text-center">
+                            <span className="font-medium">Year {student.current_year}</span>
+                            <span className="text-[10px] text-muted-foreground block">{student.current_semester === 'semester_1' ? 'Fall' : 'Spring'}</span>
+                          </td>
+                          <td className="py-3 px-3 text-center">
+                            <span className="font-bold text-sm text-foreground">{mitGpa}</span>
+                            <span className="text-[10px] text-muted-foreground block">/ 5.00</span>
+                          </td>
+                          <td className="py-3 px-3 min-w-[140px]">
+                            <div className="flex justify-between text-[11px] mb-1">
+                              <span className="text-muted-foreground">17 GIRs:</span>
+                              <span className="font-semibold text-emerald-600">{girAudit.completedGIRs}/17 ({girAudit.girPct}%)</span>
+                            </div>
+                            <Progress value={girAudit.girPct} className="h-1.5" />
+                          </td>
+                          <td className="py-3 px-3 text-center">
+                            <Badge variant="outline" className={`text-[10px] px-2 py-0.5 font-medium border ${standingBadgeClass}`}>
+                              {standingLabel}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 px-2 text-[11px] text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                                onClick={() => updateCapStandingMutation.mutate({ studentId: student.id, standing: 'good_standing', label: 'Good Standing' })}
+                              >
+                                Good Standing
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 px-2 text-[11px] text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                                onClick={() => updateCapStandingMutation.mutate({ studentId: student.id, standing: 'cap_warning', label: 'CAP Academic Warning (Credit Cap 48u)' })}
+                              >
+                                Warning
+                              </Button>
+                              <Button
+                                asChild
+                                size="sm"
+                                variant="outline"
+                                className="h-7 px-2 text-[11px] gap-1"
+                              >
+                                <Link to="/university/lifecycle">
+                                  <Workflow className="w-3 h-3 text-primary" />
+                                  Lifecycle
+                                </Link>
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="evaluation" className="mt-4 space-y-4">
           <div className="flex gap-4 flex-wrap items-end">
             <div>
               <Label className="text-xs font-medium">Academic Year</Label>
-              <Input value={academicYear} onChange={e => setAcademicYear(e.target.value)} className="w-32 mt-1.5" />
+              <Input value={academicYear} onChange={e => setAcademicYear(e.target.value)} className="w-32 mt-1.5 text-xs" />
             </div>
             <div>
               <Label className="text-xs font-medium">Evaluate Students in Year</Label>
               <Select value={fromYear} onValueChange={setFromYear}>
-                <SelectTrigger className="w-36 mt-1.5"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-36 mt-1.5 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>{[1,2,3,4,5,6].map(y => <SelectItem key={y} value={String(y)}>Year {y}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
               <Label className="text-xs font-medium">Programme</Label>
               <Select value={selectedProg} onValueChange={setSelectedProg}>
-                <SelectTrigger className="w-56 mt-1.5"><SelectValue placeholder="All programmes" /></SelectTrigger>
+                <SelectTrigger className="w-56 mt-1.5 text-xs"><SelectValue placeholder="All programmes" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value={null}>All Programmes</SelectItem>
                   {programmes.map(p => <SelectItem key={p.id} value={p.id}>{p.code} — {p.name}</SelectItem>)}
@@ -142,7 +346,7 @@ export default function Progression() {
           </div>
 
           {eligibleStudents.length === 0
-            ? <Card><CardContent className="py-12 text-center text-muted-foreground">No active Year {fromYear} students found for {academicYear}</CardContent></Card>
+            ? <Card><CardContent className="py-12 text-center text-muted-foreground text-xs">No active Year {fromYear} students found for {academicYear}</CardContent></Card>
             : (
               <div className="space-y-3">
                 {eligibleStudents.map(({ student, stuEnrollments, passed, failed, supp, avg, recommendation, alreadyDecided, prog }) => (
@@ -151,13 +355,13 @@ export default function Progression() {
                       <div className="flex items-start justify-between gap-4 flex-wrap">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-semibold">{student.first_name} {student.last_name}</p>
+                            <p className="font-semibold text-sm">{student.first_name} {student.last_name}</p>
                             <span className="text-xs text-muted-foreground">{student.student_number}</span>
                             <span className="text-xs text-muted-foreground">·</span>
                             <span className="text-xs text-muted-foreground">{student.programme_name}</span>
                             {alreadyDecided && <Badge variant="secondary" className="text-xs">Decision Recorded</Badge>}
                           </div>
-                          <div className="flex gap-6 mt-2 flex-wrap text-sm">
+                          <div className="flex gap-6 mt-2 flex-wrap text-xs">
                             <span>Enrolled: <strong>{stuEnrollments.length}</strong></span>
                             <span className="text-emerald-600">Passed: <strong>{passed.length}</strong></span>
                             <span className={failed.length > 0 ? 'text-red-600' : ''}>Failed: <strong>{failed.length}</strong></span>
@@ -166,33 +370,33 @@ export default function Progression() {
                           </div>
                           <div className="mt-2 flex flex-wrap gap-1">
                             {stuEnrollments.map(e => (
-                              <Badge key={e.id} variant={e.result === 'pass' || e.result === 'merit' || e.result === 'distinction' ? 'default' : e.result === 'fail' ? 'destructive' : 'secondary'} className="text-xs">
+                              <Badge key={e.id} variant={e.result === 'pass' || e.result === 'merit' || e.result === 'distinction' ? 'default' : e.result === 'fail' ? 'destructive' : 'secondary'} className="text-[10px]">
                                 {e.course_code}: {e.final_score != null ? `${e.final_score.toFixed(0)}%` : 'Pending'} {e.grade ? `(${e.grade})` : ''}
                               </Badge>
                             ))}
                           </div>
                         </div>
                         <div className="flex flex-col items-end gap-2">
-                          <div className={`flex items-center gap-1 text-sm font-semibold ${recColor(recommendation)}`}>
+                          <div className={`flex items-center gap-1 text-xs font-semibold ${recColor(recommendation)}`}>
                             {recIcon(recommendation)} Recommendation: {recommendation.replace(/_/g, ' ').toUpperCase()}
                           </div>
                           {!alreadyDecided && (
                             <div className="flex gap-2 flex-wrap">
-                              <Button size="sm" variant="outline" className="text-emerald-600 border-emerald-300" onClick={() => setConfirmDialog({ student, decision: 'progress', stuEnrollments, avg, passed, failed })}>
+                              <Button size="sm" variant="outline" className="text-emerald-600 border-emerald-300 text-xs h-8" onClick={() => setConfirmDialog({ student, decision: 'progress', stuEnrollments, avg, passed, failed })}>
                                 <ChevronRight className="w-3.5 h-3.5 mr-1" /> Progress
                               </Button>
                               {parseInt(fromYear) >= (prog?.duration_years || 4) && (
-                                <Button size="sm" variant="outline" className="text-indigo-600 border-indigo-300" onClick={() => setConfirmDialog({ student, decision: 'graduate', stuEnrollments, avg, passed, failed })}>
+                                <Button size="sm" variant="outline" className="text-indigo-600 border-indigo-300 text-xs h-8" onClick={() => setConfirmDialog({ student, decision: 'graduate', stuEnrollments, avg, passed, failed })}>
                                   <GraduationCap className="w-3.5 h-3.5 mr-1" /> Graduate
                                 </Button>
                               )}
-                              <Button size="sm" variant="outline" className="text-yellow-600 border-yellow-300" onClick={() => setConfirmDialog({ student, decision: 'repeat_year', stuEnrollments, avg, passed, failed })}>
+                              <Button size="sm" variant="outline" className="text-yellow-600 border-yellow-300 text-xs h-8" onClick={() => setConfirmDialog({ student, decision: 'repeat_year', stuEnrollments, avg, passed, failed })}>
                                 <RefreshCcw className="w-3.5 h-3.5 mr-1" /> Repeat
                               </Button>
-                              <Button size="sm" variant="outline" className="text-orange-600 border-orange-300" onClick={() => setConfirmDialog({ student, decision: 'supplementary', stuEnrollments, avg, passed, failed })}>
+                              <Button size="sm" variant="outline" className="text-orange-600 border-orange-300 text-xs h-8" onClick={() => setConfirmDialog({ student, decision: 'supplementary', stuEnrollments, avg, passed, failed })}>
                                 Supplementary
                               </Button>
-                              <Button size="sm" variant="outline" className="text-red-600 border-red-300" onClick={() => setConfirmDialog({ student, decision: 'exclude', stuEnrollments, avg, passed, failed })}>
+                              <Button size="sm" variant="outline" className="text-red-600 border-red-300 text-xs h-8" onClick={() => setConfirmDialog({ student, decision: 'exclude', stuEnrollments, avg, passed, failed })}>
                                 <XCircle className="w-3.5 h-3.5 mr-1" /> Exclude
                               </Button>
                             </div>
@@ -225,7 +429,7 @@ export default function Progression() {
             </AlertDialogHeader>
             <div className="px-1 py-2">
               <Label className="text-xs font-medium">Notes / Remarks</Label>
-              <Textarea className="mt-1.5" placeholder="Optional notes..." value={notes} onChange={e => setNotes(e.target.value)} />
+              <Textarea className="mt-1.5 text-xs" placeholder="Optional notes..." value={notes} onChange={e => setNotes(e.target.value)} />
             </div>
             <AlertDialogFooter>
               <AlertDialogCancel onClick={() => setNotes('')}>Cancel</AlertDialogCancel>

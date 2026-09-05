@@ -13,7 +13,8 @@ import DataTable from '@/components/shared/DataTable';
 import StatusBadge from '@/components/shared/StatusBadge';
 import EmptyState from '@/components/shared/EmptyState';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { GraduationCap, Pencil, Trash2, Search, BookOpen, Plus, UserCheck, AlertCircle, CheckCircle, Ban, Receipt } from 'lucide-react';
+import { GraduationCap, Pencil, Trash2, Search, BookOpen, Plus, UserCheck, AlertCircle, CheckCircle, Ban, Receipt, Workflow, Landmark, Compass } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Checkbox } from '@/components/ui/checkbox';
 import CustomerSalesPanel from '@/components/sales/CustomerSalesPanel';
@@ -213,14 +214,52 @@ export default function Students() {
       header: 'Student',
       render: r => (
         <div>
-          <p className="font-medium">{r.first_name} {r.last_name}</p>
-          <p className="text-xs text-muted-foreground">{r.student_number} · {r.email}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="font-medium text-foreground">{r.first_name} {r.last_name}</p>
+            {r.urop_active && (
+              <Badge variant="outline" className="text-[9px] px-1 py-0 bg-purple-500/10 text-purple-600 border-purple-300">
+                UROP
+              </Badge>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {r.mit_id ? (
+              <span className="font-mono text-[11px]">MIT ID: {r.mit_id} · {r.kerberos_id ? `@${r.kerberos_id}` : r.email}</span>
+            ) : (
+              <span>{r.student_number} · {r.email}</span>
+            )}
+          </p>
         </div>
       )
     },
     {
-      header: 'Programmes',
+      header: 'Course / Major',
       render: r => {
+        const isMit = !!(r.mit_id || r.kerberos_id);
+        if (isMit) {
+          return (
+            <div className="space-y-0.5">
+              <span className="text-xs font-medium text-foreground block">{r.declared_major || r.programme_name || 'Course 0 (Undeclared)'}</span>
+              <div className="flex items-center gap-1 flex-wrap">
+                {r.stage_label && (
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-muted/60 text-muted-foreground">
+                    {r.stage_label.split(':')[0]}
+                  </Badge>
+                )}
+                {r.cap_standing && (
+                  <Badge variant="outline" className={cn(
+                    "text-[10px] px-1 py-0",
+                    r.cap_standing === 'good_standing' && "bg-emerald-500/10 text-emerald-600 border-emerald-300",
+                    r.cap_standing === 'dean_list' && "bg-indigo-500/10 text-indigo-600 border-indigo-300",
+                    r.cap_standing === 'cap_warning' && "bg-amber-500/10 text-amber-600 border-amber-300"
+                  )}>
+                    {r.cap_standing === 'good_standing' ? 'Good Standing' : (r.cap_standing === 'dean_list' ? "Dean's List" : 'CAP Warning')}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          );
+        }
         const stuProgs = getStudentProgrammes(r);
         if (stuProgs.length === 0) return <span className="text-xs text-muted-foreground">Not enrolled</span>;
         return (
@@ -247,12 +286,30 @@ export default function Students() {
         </div>
       )
     },
-    { header: 'GPA', render: r => <span className={`font-bold ${getGpaColor(r.cumulative_gpa || 0)}`}>{(r.cumulative_gpa || 0).toFixed(2)}</span> },
+    {
+      header: 'GPA / Rating',
+      render: r => {
+        const isMit = !!(r.mit_id || r.kerberos_id);
+        const gpa = (r.cumulative_gpa || 0).toFixed(2);
+        return (
+          <div>
+            <span className={`font-bold ${getGpaColor(r.cumulative_gpa || 0)}`}>{gpa}</span>
+            {isMit && <span className="text-[10px] text-muted-foreground block">5.0 Scale</span>}
+          </div>
+        );
+      }
+    },
     { header: 'Status', render: r => <StudentStatusBadge status={r.status} /> },
     {
       header: 'Actions',
       render: r => (
-        <div className="flex gap-1 flex-wrap">
+        <div className="flex gap-1 flex-wrap items-center">
+          <Button asChild size="sm" variant="ghost" className="text-primary h-7 px-1.5" title="Manage in MIT Student Lifecycle">
+            <Link to="/university/lifecycle">
+              <Workflow className="w-3.5 h-3.5 mr-1" />
+              <span className="text-[11px]">Lifecycle</span>
+            </Link>
+          </Button>
           {r.status === 'blocked' && <Button size="sm" variant="ghost" className="text-emerald-600" title="Unblock" onClick={e => { e.stopPropagation(); setStudentStatus(r, 'enrolled'); }}><CheckCircle className="w-3.5 h-3.5" /></Button>}
           {r.status === 'enrolled' && <Button size="sm" variant="ghost" className="text-red-500" title="Block (fees)" onClick={e => { e.stopPropagation(); setStudentStatus(r, 'blocked'); }}><Ban className="w-3.5 h-3.5" /></Button>}
           <Button size="sm" variant="ghost" title="Enrol in Programme" onClick={e => { e.stopPropagation(); setProgEnrolDialog(r); setProgEnrolForm({ programme_id: '', intake_year: new Date().getFullYear().toString(), enrollment_date: new Date().toISOString().slice(0, 10) }); }}><GraduationCap className="w-3.5 h-3.5" /></Button>

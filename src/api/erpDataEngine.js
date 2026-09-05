@@ -1,8 +1,9 @@
 // Universal Enterprise Data Engine for NexusERP (Dynamics 365 Business Central & F&O Equivalent)
 // Provides complete offline-capable, unrestricted persistence with full seed data matching CRONUS International Ltd.
 import { BC_SAMPLE_DATA } from "./bcSampleData";
+import { MIT_SAMPLE_DATA } from "./mitSampleData";
 
-export { BC_SAMPLE_DATA };
+export { BC_SAMPLE_DATA, MIT_SAMPLE_DATA };
 
 const STORAGE_PREFIX = "nexuserp_data_";
 const ACTIVE_COMPANY_KEY = "nexuserp_active_company";
@@ -135,9 +136,28 @@ export function importBCServerSampleData(targetCompanyId = null, force = true) {
   return { success: true, count: totalCount, companyId };
 }
 
-// Initial seed data matching Dynamics 365 Business Central standards, seeded directly from SQL Server BC_DemoDB (CRONUS UK Ltd_)
+// Utility to load MIT Academic Student Life Cycle master data (Course Departments, GIRs, Students, UROPs, Advising)
+export function importMITAcademicLifeCycleData(targetCompanyId = null, force = true) {
+  const companyId = targetCompanyId || getActiveCompany().id;
+  let totalCount = 0;
+  if (typeof window !== "undefined") {
+    for (const [entityName, records] of Object.entries(MIT_SAMPLE_DATA)) {
+      const storageKey = `${STORAGE_PREFIX}${companyId}_${entityName}`;
+      if (force || !localStorage.getItem(storageKey)) {
+        localStorage.setItem(storageKey, JSON.stringify(records));
+        totalCount += records.length;
+        window.dispatchEvent(new CustomEvent(`datastore_${entityName}_updated`, { detail: records }));
+      }
+    }
+    window.dispatchEvent(new CustomEvent("mit_lifecycle_data_imported", { detail: { companyId, totalCount } }));
+  }
+  return { success: true, count: totalCount, companyId };
+}
+
+// Initial seed data matching Dynamics 365 Business Central standards, seeded directly from SQL Server BC_DemoDB & MIT Academic Model
 export const INITIAL_DATA = {
   ...BC_SAMPLE_DATA,
+  ...MIT_SAMPLE_DATA,
 
   // Warehouses Bins & Advanced Routing
   WarehouseBin: [
@@ -247,6 +267,39 @@ export const INITIAL_DATA = {
   InventoryCount: [
     { id: "cnt-1", count_order_no: "PIC-2026-Q3", location_code: "MAIN", scheduled_date: "2026-09-30", status: "open", counted_by: "Warehouse Team Alpha", items_to_count: 142, variance_cost: 0 },
     { id: "cnt-2", count_order_no: "PIC-2026-Q2", location_code: "MAIN", scheduled_date: "2026-06-30", status: "posted", counted_by: "Warehouse Team Beta", items_to_count: 138, variance_cost: -340.00 }
+  ],
+
+  // Cash Flow Manual Entries
+  CashFlowManualEntry: [
+    { id: "cfm-1", description: "HMRC Quarterly Corporation Tax Installment", entry_type: "expense", amount: 24000.00, due_date: "2026-09-25", category: "Tax", recurrence: "quarterly" },
+    { id: "cfm-2", description: "Facility & Cloud Server Leases", entry_type: "expense", amount: 6500.00, due_date: "2026-09-30", category: "Operational", recurrence: "monthly" },
+    { id: "cfm-3", description: "R&D Government Innovation Grant Inflow", entry_type: "revenue", amount: 45000.00, due_date: "2026-10-15", category: "Financing", recurrence: "once" }
+  ],
+
+  // VAT Returns
+  VATReturn: [
+    { id: "vat-2026-q2", period: "2026-Q2", box1: 18400.00, box2: 0, box3: 18400.00, box4: 7200.00, box5: 11200.00, box6: 92000, box7: 36000, box8: 0, box9: 0, status: "submitted", due_date: "2026-08-07" },
+    { id: "vat-2026-q3", period: "2026-Q3", box1: 22400.00, box2: 0, box3: 22400.00, box4: 8900.00, box5: 13500.00, box6: 112000, box7: 44500, box8: 0, box9: 0, status: "calculated", due_date: "2026-11-07" }
+  ],
+
+  // Intercompany Partners & Transactions
+  IntercompanyPartner: [
+    { id: "icp-1", code: "CRONUS-US", name: "CRONUS North America Inc", country: "United States", currency: "USD", auto_accept: false, offset_account: "1910 - Due from CRONUS US" },
+    { id: "icp-2", code: "CRONUS-EU", name: "CRONUS Europe B.V.", country: "Netherlands", currency: "EUR", auto_accept: true, offset_account: "1920 - Due from CRONUS EU" },
+    { id: "icp-3", code: "NEXUS-TECH", name: "Nexus Innovations Ltd", country: "United Kingdom", currency: "GBP", auto_accept: true, offset_account: "1930 - Due from Nexus Tech" }
+  ],
+  IntercompanyInbox: [
+    { id: "icin-1", transaction_no: "IC-IN-90021", from_partner_name: "CRONUS North America Inc", partner_code: "CRONUS-US", document_type: "Management Charge", description: "Shared Cloud Engineering & SOC-2 Infrastructure allocation", amount: 18500.00, currency: "GBP", status: "pending", posting_date: "2026-09-04" },
+    { id: "icin-2", transaction_no: "IC-IN-90022", from_partner_name: "CRONUS Europe B.V.", partner_code: "CRONUS-EU", document_type: "Distribution Fee", description: "EU Warehousing and Logistics handling", amount: 7400.00, currency: "GBP", status: "accepted", posting_date: "2026-09-02" }
+  ],
+  IntercompanyOutbox: [
+    { id: "icout-1", transaction_no: "IC-OUT-80011", partner_code: "CRONUS-US", document_type: "IP License", description: "Nexus Platform Enterprise Software Royalty", amount: 25000.00, currency: "GBP", status: "pending_dispatch", posting_date: "2026-09-05" }
+  ],
+
+  // Assembly Orders
+  AssemblyOrder: [
+    { id: "asy-1", order_no: "ASY-1001", item_code: "KIT-CAD-WORKSTATION", item_name: "High-Performance CAD Workstation Bundle", quantity_to_assemble: 10, assembled_quantity: 0, location_code: "MAIN", due_date: "2026-09-15", assembly_policy: "Assemble-to-Stock (ATS)", status: "open", total_cost: 14500.00, lines_count: 4 },
+    { id: "asy-2", order_no: "ASY-1002", item_code: "KIT-IOT-ROBOTICS", item_name: "Autonomous Robotics Sensor Kit", quantity_to_assemble: 25, assembled_quantity: 25, location_code: "MAIN", due_date: "2026-09-02", assembly_policy: "Assemble-to-Order (ATO)", status: "posted", total_cost: 8750.00, lines_count: 3 }
   ]
 };
 

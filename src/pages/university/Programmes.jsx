@@ -13,7 +13,8 @@ import DataTable from '@/components/shared/DataTable';
 import StatusBadge from '@/components/shared/StatusBadge';
 import EmptyState from '@/components/shared/EmptyState';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { BookOpen, Pencil, Trash2, Search, List, Link } from 'lucide-react';
+import { BookOpen, Pencil, Trash2, Search, List, Link, Sparkles, Landmark, GraduationCap, ShieldCheck } from 'lucide-react';
+import { MIT_GIR_REQUIREMENTS, MIT_COURSES } from '@/lib/academicUtils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
@@ -149,7 +150,10 @@ export default function Programmes() {
       <Tabs defaultValue="programmes">
         <TabsList>
           <TabsTrigger value="programmes">Programmes ({programmes.length})</TabsTrigger>
-          <TabsTrigger value="courses">Courses ({courses.length})</TabsTrigger>
+          <TabsTrigger value="courses">Subjects & Courses ({courses.length})</TabsTrigger>
+          <TabsTrigger value="mit_curriculum" className="gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-primary" /> MIT GIR & Course Departments
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="programmes" className="mt-4 space-y-4">
@@ -165,6 +169,70 @@ export default function Programmes() {
         <TabsContent value="courses" className="mt-4 space-y-4">
           {selectedProg && <p className="text-sm text-muted-foreground">Showing courses for: <strong>{programmes.find(p => p.id === selectedProg)?.name}</strong> <Button variant="link" size="sm" onClick={() => setSelectedProg(null)}>Show All</Button></p>}
           <DataTable columns={courseColumns} data={displayedCourses} isLoading={coursesLoading} emptyMessage="No courses yet" />
+        </TabsContent>
+
+        <TabsContent value="mit_curriculum" className="mt-4 space-y-6">
+          {/* General Institute Requirements Overview */}
+          <Card className="shadow-xs">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-primary" />
+                    MIT General Institute Requirements (GIR) Master Framework
+                  </CardTitle>
+                  <CardDescription className="text-xs mt-0.5">
+                    17 compulsory undergraduate subjects forming the core intellectual foundation of an MIT education
+                  </CardDescription>
+                </div>
+                <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
+                  17 Institute Requirements
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {MIT_GIR_REQUIREMENTS.map(gir => (
+                  <div key={gir.id} className="p-3 rounded-lg border bg-muted/20 hover:bg-muted/40 transition-colors text-xs space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono font-bold text-primary">{gir.code}</span>
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{gir.category}</Badge>
+                    </div>
+                    <p className="font-medium text-foreground">{gir.name}</p>
+                    <p className="text-[11px] text-muted-foreground">Units: {gir.units} · Required for all S.B. degrees</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* MIT Course Major Academic Departments */}
+          <Card className="shadow-xs">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Landmark className="w-4 h-4 text-primary" />
+                MIT Course Departments (Course 1 – Course 24)
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Undergraduate degree programs awarding the Scientiae Baccalaureus (S.B.) upon completion of 180+ major units
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {MIT_COURSES.map(course => (
+                  <div key={course.code} className="p-3 rounded-lg border bg-card text-xs space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-foreground font-mono">{course.code}</span>
+                      <Badge variant="outline" className="text-[10px]">{course.degree}</Badge>
+                    </div>
+                    <p className="font-semibold text-primary">{course.name}</p>
+                    <p className="text-[11px] text-muted-foreground">Department: {course.department}</p>
+                    <p className="text-[11px] text-muted-foreground">Required Major Units: {course.required_major_units} Units</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 

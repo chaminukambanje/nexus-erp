@@ -63,6 +63,10 @@ import CustomerPriceLists from "@/pages/CustomerPriceLists";
 import ServiceContracts from "@/pages/ServiceContracts";
 import ApprovalWorkflows from "@/pages/ApprovalWorkflows";
 import Companies from "@/pages/Companies";
+import CashFlowForecast from "@/pages/CashFlowForecast";
+import VATReturns from "@/pages/VATReturns";
+import Intercompany from "@/pages/Intercompany";
+import AssemblyOrders from "@/pages/AssemblyOrders";
 
 // University pages
 import Admissions from "@/pages/university/Admissions";
@@ -119,6 +123,9 @@ const AuthenticatedApp = () => {
           <Route path="/payments" element={<Payments />} />
           <Route path="/currencies" element={<Currencies />} />
           <Route path="/budgets" element={<Budgets />} />
+          <Route path="/cash-flow" element={<CashFlowForecast />} />
+          <Route path="/vat-returns" element={<VATReturns />} />
+          <Route path="/intercompany" element={<Intercompany />} />
           <Route path="/fixed-assets" element={<FixedAssets />} />
           <Route path="/credit-memos" element={<CreditMemos />} />
           <Route path="/posting-groups" element={<PostingGroups />} />
@@ -148,6 +155,7 @@ const AuthenticatedApp = () => {
 
           {/* Manufacturing */}
           <Route path="/production-orders" element={<ProductionOrders />} />
+          <Route path="/assembly-orders" element={<AssemblyOrders />} />
           <Route path="/manufacturing-bom" element={<ManufacturingBOM />} />
           <Route path="/work-centers" element={<WorkCenters />} />
           <Route path="/mrp-planning" element={<MRPPlanning />} />

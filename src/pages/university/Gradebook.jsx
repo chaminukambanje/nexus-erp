@@ -14,7 +14,9 @@ import FormField from '@/components/shared/FormField';
 import DataTable from '@/components/shared/DataTable';
 import StatusBadge from '@/components/shared/StatusBadge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { ClipboardList, Pencil, Trash2, Plus, Search, Save } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { ClipboardList, Pencil, Trash2, Plus, Search, Save, Sparkles, Layers, Landmark } from 'lucide-react';
+import { scoreToMITGrade } from '@/lib/academicUtils';
 import { format } from 'date-fns';
 
 const defaultAssessment = { title: '', type: 'assignment', semester: 'semester_1', total_marks: 100, weight_percent: 10, status: 'upcoming' };
@@ -40,6 +42,7 @@ export default function Gradebook() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [gradeEdits, setGradeEdits] = useState({});
   const [saving, setSaving] = useState(false);
+  const [gradingScale, setGradingScale] = useState('mit'); // 'mit' | 'standard'
 
   const { data: courses = [] } = useQuery({ queryKey: ['courses'], queryFn: () => base44.entities.Course.list() });
   const { data: assessments = [], isLoading: assLoading } = useQuery({ queryKey: ['assessments'], queryFn: () => base44.entities.Assessment.list('-due_date', 500) });
@@ -126,8 +129,33 @@ export default function Gradebook() {
       else if (cw !== null) finalScore = cw;
       else if (exam !== null) finalScore = exam;
       if (finalScore === null) return;
-      const { grade, points, result } = calcGrade(finalScore, passMark);
-      await base44.entities.Enrollment.update(enr.id, { ...enr, coursework_score: cw, exam_score: exam, final_score: parseFloat(finalScore.toFixed(2)), grade, grade_points: points, result });
+      const student = students.find(s => s.id === enr.student_id);
+      let grade, points, result, transcriptStatus;
+      if (gradingScale === 'mit' || student?.mit_id || student?.kerberos_id) {
+        const isFirstYearFall = student?.current_year === 1 && student?.current_semester === 'semester_1';
+        const isFirstYearSpring = student?.current_year === 1 && student?.current_semester === 'semester_2';
+        const policy = student?.grading_policy || (isFirstYearFall ? 'first_year_fall' : (isFirstYearSpring ? 'first_year_spring' : 'regular'));
+        const mitRes = scoreToMITGrade(finalScore, policy);
+        grade = mitRes.grade;
+        points = mitRes.grade_points;
+        result = mitRes.result;
+        transcriptStatus = mitRes.transcript_status;
+      } else {
+        const std = calcGrade(finalScore, passMark);
+        grade = std.grade;
+        points = std.points;
+        result = std.result;
+      }
+      await base44.entities.Enrollment.update(enr.id, {
+        ...enr,
+        coursework_score: cw,
+        exam_score: exam,
+        final_score: parseFloat(finalScore.toFixed(2)),
+        grade,
+        grade_points: points,
+        result,
+        transcript_status: transcriptStatus
+      });
     });
     await Promise.all(enrollOps);
 
@@ -174,21 +202,56 @@ export default function Gradebook() {
 
         {/* GRADE ENTRY TAB */}
         <TabsContent value="grade_entry" className="mt-4 space-y-4">
-          <div className="flex gap-4 flex-wrap items-end">
-            <div>
-              <Label className="text-xs font-medium">Course</Label>
-              <Select value={selectedCourse} onValueChange={setSelectedCourse}>
-                <SelectTrigger className="w-64 mt-1.5"><SelectValue placeholder="Select a course..." /></SelectTrigger>
-                <SelectContent>{courses.map(c => <SelectItem key={c.id} value={c.id}>{c.code} — {c.name}</SelectItem>)}</SelectContent>
-              </Select>
+          <div className="flex gap-4 flex-wrap items-end justify-between">
+            <div className="flex gap-4 flex-wrap items-end">
+              <div>
+                <Label className="text-xs font-medium">Subject / Course</Label>
+                <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+                  <SelectTrigger className="w-64 mt-1.5 text-xs"><SelectValue placeholder="Select a course..." /></SelectTrigger>
+                  <SelectContent>{courses.map(c => <SelectItem key={c.id} value={c.id}>{c.code} — {c.name}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs font-medium">Academic Year</Label>
+                <Input value={selectedYear} onChange={e => setSelectedYear(e.target.value)} className="w-32 mt-1.5 text-xs" />
+              </div>
+              {courses.find(c => c.id === selectedCourse)?.gir_category && (
+                <div className="pb-1">
+                  <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
+                    GIR: {courses.find(c => c.id === selectedCourse)?.gir_category}
+                  </Badge>
+                </div>
+              )}
+              {Object.keys(gradeEdits).length > 0 && (
+                <Button onClick={saveGrades} disabled={saving} className="gap-2 text-xs"><Save className="w-4 h-4" />{saving ? 'Saving...' : `Save ${Object.keys(gradeEdits).length} Grades`}</Button>
+              )}
             </div>
-            <div>
-              <Label className="text-xs font-medium">Academic Year</Label>
-              <Input value={selectedYear} onChange={e => setSelectedYear(e.target.value)} className="w-32 mt-1.5" />
+
+            {/* Scale switcher */}
+            <div className="inline-flex rounded-lg border bg-muted/40 p-1 text-xs">
+              <button
+                type="button"
+                onClick={() => setGradingScale('mit')}
+                className={cn(
+                  'flex items-center gap-1.5 px-2.5 py-1 rounded-md font-medium transition-colors',
+                  gradingScale === 'mit' ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <Sparkles className="w-3 h-3 text-primary" />
+                MIT 5.0 (P/NR)
+              </button>
+              <button
+                type="button"
+                onClick={() => setGradingScale('standard')}
+                className={cn(
+                  'flex items-center gap-1.5 px-2.5 py-1 rounded-md font-medium transition-colors',
+                  gradingScale === 'standard' ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <Layers className="w-3 h-3" />
+                Standard 4.0
+              </button>
             </div>
-            {Object.keys(gradeEdits).length > 0 && (
-              <Button onClick={saveGrades} disabled={saving} className="gap-2"><Save className="w-4 h-4" />{saving ? 'Saving...' : `Save ${Object.keys(gradeEdits).length} Grades`}</Button>
-            )}
           </div>
 
           {!selectedCourse ? (

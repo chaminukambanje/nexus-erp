@@ -9,7 +9,7 @@ import {
   UserPlus, GraduationCap, BookOpenCheck, ClipboardCheck, Award,
   Workflow, Eye, Warehouse, QrCode, Factory, Calculator, Scale,
   Coins, ArrowRightLeft, ShieldCheck, Briefcase, FileCheck, Tags, Sparkles,
-  Search, SlidersHorizontal, ArrowUpRight
+  Search, SlidersHorizontal, ArrowUpRight, Landmark, Boxes
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { cn } from "@/lib/utils";
@@ -89,6 +89,24 @@ const navSections = [
         path: "/budgets",
         icon: PiggyBank,
         keywords: ["financial budgets", "forecast", "gl budget", "variance", "budget vs actual", "cost center budget"]
+      },
+      {
+        label: "Cash Flow Forecast",
+        path: "/cash-flow",
+        icon: TrendingUp,
+        keywords: ["cash flow", "liquidity", "forecast", "runway", "inflows", "outflows", "cash planning", "working capital", "treasury", "business central cash flow"]
+      },
+      {
+        label: "VAT Returns & Statements",
+        path: "/vat-returns",
+        icon: Landmark,
+        keywords: ["vat", "tax", "vat return", "vat statement", "hmrc", "mtd", "making tax digital", "box 1", "box 5", "settlement", "tax return", "ecsl"]
+      },
+      {
+        label: "Intercompany Postings",
+        path: "/intercompany",
+        icon: ArrowRightLeft,
+        keywords: ["intercompany", "ic", "inbox", "outbox", "affiliates", "subsidiaries", "cross company", "recharges", "netting", "consolidation", "ic partner"]
       },
       {
         label: "Fixed Assets",
@@ -235,6 +253,12 @@ const navSections = [
         path: "/production-orders",
         icon: Factory,
         keywords: ["production orders", "manufacturing orders", "work orders", "shopfloor", "wip", "routing", "operations", "released orders", "finished orders"]
+      },
+      {
+        label: "Assembly Orders & Kitting",
+        path: "/assembly-orders",
+        icon: Boxes,
+        keywords: ["assembly orders", "kitting", "kits", "assemble to order", "ato", "ats", "assemble to stock", "bundle", "light manufacturing", "bill of materials"]
       },
       {
         label: "Production BOMs",

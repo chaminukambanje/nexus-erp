@@ -75,25 +75,56 @@ export default function Admissions() {
       const prog = programmes.find(p => p.id === applicant.desired_programme_id);
       const snum = `STU-${String(Date.now()).slice(-6)}`;
       const cnum = `CUST-STU-${String(Date.now()).slice(-6)}`;
+      const mitId = `928${String(Date.now()).slice(-6)}`;
+      const kerberos = (applicant.first_name[0] + (applicant.last_name || '')).toLowerCase().replace(/[^a-z0-9]/g, '');
 
       // 1. Create Customer record for fees/billing
       const customer = await base44.entities.Customer.create({
         customer_number: cnum, name: `${applicant.first_name} ${applicant.last_name}`,
         email: applicant.email, phone: applicant.phone, status: 'active',
-        notes: `Student: ${snum}`
+        notes: `Student: ${snum} (MIT ID: ${mitId})`
       });
 
-      // 2. Create Student record
+      // 2. Create Student record initialized with MIT Academic Student Life Cycle (Phase 1 & 2)
       const student = await base44.entities.Student.create({
-        student_number: snum, first_name: applicant.first_name, last_name: applicant.last_name,
-        email: applicant.email, phone: applicant.phone, date_of_birth: applicant.date_of_birth,
-        gender: applicant.gender, nationality: applicant.nationality, national_id: applicant.national_id,
-        applicant_id: applicant.id, programme_id: applicant.desired_programme_id,
-        programme_name: prog?.name || applicant.desired_programme_name,
-        intake_year: applicant.desired_intake_year, current_year: 1, current_semester: 'semester_1',
+        student_number: snum,
+        mit_id: mitId,
+        kerberos_id: kerberos,
+        first_name: applicant.first_name,
+        last_name: applicant.last_name,
+        email: applicant.email,
+        phone: applicant.phone,
+        date_of_birth: applicant.date_of_birth,
+        gender: applicant.gender,
+        nationality: applicant.nationality,
+        national_id: applicant.national_id,
+        applicant_id: applicant.id,
+        programme_id: applicant.desired_programme_id,
+        programme_name: prog?.name || applicant.desired_programme_name || 'First-Year (Course 0 Undeclared)',
+        declared_major: prog?.name ? `${prog.code || ''} ${prog.name}` : null,
+        intake_year: applicant.desired_intake_year,
+        cohort_year: applicant.desired_intake_year || new Date().getFullYear().toString(),
+        class_year: `Class of ${parseInt(applicant.desired_intake_year || new Date().getFullYear()) + 4}`,
+        current_year: 1,
+        current_semester: 'semester_1',
+        academic_stage: 'first_year_fall',
+        stage_label: 'Phase 2: First-Year Fall (Pass/No Record)',
+        grading_policy: 'first_year_fall',
+        first_year_advisor: 'Prof. Gerald Sussman',
+        associate_advisor: "Alex Chen '27",
+        uac_seminar: 'SP.210 - The Joy of Engineering',
+        cap_standing: 'good_standing',
+        cap_status_label: 'Good Standing (P/NR Protected)',
+        cumulative_gpa: 5.0,
+        term_rating: 5.0,
+        pe_points_completed: 0,
+        swim_test_passed: false,
         enrollment_date: new Date().toISOString().slice(0, 10),
-        status: 'pending_fees', fees_status: 'outstanding',
-        customer_id: customer.id, customer_number: cnum
+        status: 'enrolled',
+        fees_status: 'paid',
+        outstanding_balance: 0,
+        customer_id: customer.id,
+        customer_number: cnum
       });
 
       // 3. Update CRM Contact: upgrade type to 'student', link student & customer records
@@ -103,7 +134,7 @@ export default function Admissions() {
           student_id: student.id,
           customer_id: customer.id,
           last_interaction: new Date().toISOString().slice(0, 10),
-          notes: `Enrolled as student ${snum} — Customer ${cnum}`
+          notes: `Enrolled as student ${snum} (MIT ID: ${mitId}, Kerberos: ${kerberos}) — Customer ${cnum}`
         });
       }
 
@@ -119,10 +150,13 @@ export default function Admissions() {
       await base44.entities.Applicant.update(applicant.id, { ...applicant, status: 'enrolled' });
       return student;
     },
-    onSuccess: () => {
+    onSuccess: (student) => {
       qc.invalidateQueries(['applicants']); qc.invalidateQueries(['students']);
       qc.invalidateQueries(['contacts']); qc.invalidateQueries(['opportunities']);
-      toast({ title: 'Applicant enrolled as student', description: 'Customer, Contact and Opportunity records updated.' });
+      toast({
+        title: 'Applicant Matriculated into MIT Academic Life Cycle',
+        description: `Student ${student.first_name} ${student.last_name} enrolled (MIT ID: ${student.mit_id}, Kerberos: ${student.kerberos_id}@mit.edu). UAC Advisor assigned.`
+      });
     }
   });
 
