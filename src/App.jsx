@@ -62,6 +62,7 @@ import SalesShipments from "@/pages/SalesShipments";
 import CustomerPriceLists from "@/pages/CustomerPriceLists";
 import ServiceContracts from "@/pages/ServiceContracts";
 import ApprovalWorkflows from "@/pages/ApprovalWorkflows";
+import Companies from "@/pages/Companies";
 
 // University pages
 import Admissions from "@/pages/university/Admissions";
@@ -107,6 +108,7 @@ const AuthenticatedApp = () => {
           {/* Home */}
           <Route path="/" element={<Dashboard />} />
           <Route path="/role-center" element={<RoleCenter />} />
+          <Route path="/companies" element={<Companies />} />
 
           {/* Finance */}
           <Route path="/chart-of-accounts" element={<ChartOfAccounts />} />

@@ -30,6 +30,12 @@ const navSections = [
         path: "/",
         icon: LayoutDashboard,
         keywords: ["dashboard", "metrics", "analytics", "kpis", "summary", "revenue", "pipeline"]
+      },
+      {
+        label: "Legal Entities & Companies",
+        path: "/companies",
+        icon: Building2,
+        keywords: ["companies", "legal entities", "company", "subsidiaries", "intercompany", "business units", "multi company", "corporate structure", "new company", "add company", "create legal entity"]
       }
     ]
   },

@@ -3,17 +3,45 @@
 
 const STORAGE_PREFIX = "nexuserp_data_";
 const ACTIVE_COMPANY_KEY = "nexuserp_active_company";
+const COMPANIES_STORAGE_KEY = "nexuserp_companies_list";
 
-export const COMPANIES = [
-  { id: "cronus-uk", name: "CRONUS UK Ltd.", code: "GB", currency: "GBP", country: "United Kingdom", logo: "🇬🇧" },
-  { id: "contoso-us", name: "Contoso Enterprise Solutions Inc.", code: "US", currency: "USD", country: "United States", logo: "🇺🇸" },
-  { id: "fabrikam-eu", name: "Fabrikam Manufacturing GmbH", code: "DE", currency: "EUR", country: "Germany", logo: "🇩🇪" }
+export const DEFAULT_COMPANIES = [
+  { id: "cronus-uk", name: "CRONUS UK Ltd.", code: "GB", currency: "GBP", country: "United Kingdom", logo: "🇬🇧", created_at: "2026-01-01" },
+  { id: "contoso-us", name: "Contoso Enterprise Solutions Inc.", code: "US", currency: "USD", country: "United States", logo: "🇺🇸", created_at: "2026-01-01" },
+  { id: "fabrikam-eu", name: "Fabrikam Manufacturing GmbH", code: "DE", currency: "EUR", country: "Germany", logo: "🇩🇪", created_at: "2026-01-01" }
 ];
 
+export function getCompanies() {
+  if (typeof window === "undefined") return DEFAULT_COMPANIES;
+  const stored = localStorage.getItem(COMPANIES_STORAGE_KEY);
+  if (!stored) {
+    localStorage.setItem(COMPANIES_STORAGE_KEY, JSON.stringify(DEFAULT_COMPANIES));
+    return DEFAULT_COMPANIES;
+  }
+  try {
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_COMPANIES;
+  } catch {
+    return DEFAULT_COMPANIES;
+  }
+}
+
+// Dynamic Proxy for backward compatibility with existing imports of COMPANIES
+export const COMPANIES = new Proxy(DEFAULT_COMPANIES, {
+  get(target, prop, receiver) {
+    const list = getCompanies();
+    if (prop === "length") return list.length;
+    if (typeof prop === "string" && !isNaN(prop)) return list[Number(prop)];
+    if (typeof list[prop] === "function") return list[prop].bind(list);
+    return Reflect.get(list, prop, receiver);
+  }
+});
+
 export function getActiveCompany() {
-  if (typeof window === "undefined") return COMPANIES[0];
+  if (typeof window === "undefined") return DEFAULT_COMPANIES[0];
   const saved = localStorage.getItem(ACTIVE_COMPANY_KEY);
-  return COMPANIES.find(c => c.id === saved) || COMPANIES[0];
+  const companies = getCompanies();
+  return companies.find(c => c.id === saved) || companies[0];
 }
 
 export function setActiveCompany(companyId) {
@@ -21,6 +49,72 @@ export function setActiveCompany(companyId) {
     localStorage.setItem(ACTIVE_COMPANY_KEY, companyId);
     window.dispatchEvent(new CustomEvent("company_changed", { detail: companyId }));
   }
+}
+
+export function createLegalEntity({ name, code, currency, country, logo, copySetupFrom = "cronus-uk" }) {
+  if (!name || !name.trim()) throw new Error("Company name is required");
+  const cleanCode = (code || name.slice(0, 4)).toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const id = `comp-${cleanCode.toLowerCase()}-${Date.now().toString(36)}`;
+
+  const newCompany = {
+    id,
+    name: name.trim(),
+    code: cleanCode,
+    currency: (currency || "GBP").toUpperCase(),
+    country: country || "United Kingdom",
+    logo: logo || "🏢",
+    created_at: new Date().toISOString()
+  };
+
+  const list = getCompanies();
+  list.push(newCompany);
+  localStorage.setItem(COMPANIES_STORAGE_KEY, JSON.stringify(list));
+
+  // If template is specified, copy baseline configuration entities into new company's data namespace
+  if (copySetupFrom && copySetupFrom !== "none" && typeof window !== "undefined") {
+    const configEntities = [
+      "Dimension", "DimensionValue", "Currency", "WarehouseLocation",
+      "WarehouseBin", "PostingGroup", "CustomerPriceList"
+    ];
+    configEntities.forEach(entity => {
+      const sourceKey = `${STORAGE_PREFIX}${copySetupFrom}_${entity}`;
+      const targetKey = `${STORAGE_PREFIX}${id}_${entity}`;
+      const sourceData = localStorage.getItem(sourceKey);
+      if (sourceData) {
+        localStorage.setItem(targetKey, sourceData);
+      } else if (INITIAL_DATA[entity]) {
+        localStorage.setItem(targetKey, JSON.stringify(INITIAL_DATA[entity]));
+      }
+    });
+  }
+
+  window.dispatchEvent(new CustomEvent("companies_updated", { detail: list }));
+  return newCompany;
+}
+
+export function updateLegalEntity(companyId, data) {
+  const list = getCompanies();
+  const index = list.findIndex(c => c.id === companyId);
+  if (index === -1) throw new Error("Company not found");
+  list[index] = { ...list[index], ...data };
+  localStorage.setItem(COMPANIES_STORAGE_KEY, JSON.stringify(list));
+  window.dispatchEvent(new CustomEvent("companies_updated", { detail: list }));
+  return list[index];
+}
+
+export function deleteLegalEntity(companyId) {
+  const list = getCompanies();
+  if (list.length <= 1) throw new Error("Cannot delete the only remaining legal entity");
+  const filtered = list.filter(c => c.id !== companyId);
+  localStorage.setItem(COMPANIES_STORAGE_KEY, JSON.stringify(filtered));
+
+  // If the deleted company was active, switch to the first remaining one
+  if (getActiveCompany().id === companyId) {
+    setActiveCompany(filtered[0].id);
+  }
+
+  window.dispatchEvent(new CustomEvent("companies_updated", { detail: filtered }));
+  return filtered;
 }
 
 // Initial seed data matching Dynamics 365 Business Central standards
