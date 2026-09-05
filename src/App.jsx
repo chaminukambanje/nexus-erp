@@ -67,6 +67,7 @@ import CashFlowForecast from "@/pages/CashFlowForecast";
 import VATReturns from "@/pages/VATReturns";
 import Intercompany from "@/pages/Intercompany";
 import AssemblyOrders from "@/pages/AssemblyOrders";
+import SecurityPermissions from "@/pages/SecurityPermissions";
 
 // University pages
 import Admissions from "@/pages/university/Admissions";
@@ -165,8 +166,10 @@ const AuthenticatedApp = () => {
           <Route path="/service-orders" element={<ServiceOrders />} />
           <Route path="/service-contracts" element={<ServiceContracts />} />
 
-          {/* Approvals */}
+          {/* Approvals & Administration */}
           <Route path="/approvals" element={<ApprovalWorkflows />} />
+          <Route path="/permissions" element={<SecurityPermissions />} />
+          <Route path="/security" element={<SecurityPermissions />} />
 
           {/* HR & CRM */}
           <Route path="/employees" element={<Employees />} />

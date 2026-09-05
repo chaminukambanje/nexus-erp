@@ -300,6 +300,177 @@ export const INITIAL_DATA = {
   AssemblyOrder: [
     { id: "asy-1", order_no: "ASY-1001", item_code: "KIT-CAD-WORKSTATION", item_name: "High-Performance CAD Workstation Bundle", quantity_to_assemble: 10, assembled_quantity: 0, location_code: "MAIN", due_date: "2026-09-15", assembly_policy: "Assemble-to-Stock (ATS)", status: "open", total_cost: 14500.00, lines_count: 4 },
     { id: "asy-2", order_no: "ASY-1002", item_code: "KIT-IOT-ROBOTICS", item_name: "Autonomous Robotics Sensor Kit", quantity_to_assemble: 25, assembled_quantity: 25, location_code: "MAIN", due_date: "2026-09-02", assembly_policy: "Assemble-to-Order (ATO)", status: "posted", total_cost: 8750.00, lines_count: 3 }
+  ],
+
+  // IT Security, Users & Permissions
+  SystemUser: [
+    {
+      id: "usr-1",
+      username: "mbanjec",
+      full_name: "Chaminuka Mbanje",
+      email: "mbanjec@gmail.com",
+      role_ids: ["SUPER"],
+      status: "active",
+      license_type: "Internal Administrator",
+      company_scope: "ALL",
+      mfa_enabled: true,
+      last_login: "2026-09-05 21:40",
+      created_at: "2026-01-01"
+    },
+    {
+      id: "usr-2",
+      username: "sarah.jenkins",
+      full_name: "Sarah Jenkins",
+      email: "s.jenkins@cronus.co.uk",
+      role_ids: ["FINANCE-MGR"],
+      status: "active",
+      license_type: "Full User",
+      company_scope: "CRONUS UK Ltd",
+      mfa_enabled: true,
+      last_login: "2026-09-05 18:22",
+      created_at: "2026-01-15"
+    },
+    {
+      id: "usr-3",
+      username: "alex.mercer",
+      full_name: "Alex Mercer",
+      email: "a.mercer@cronus.co.uk",
+      role_ids: ["SALES-REP"],
+      status: "active",
+      license_type: "Full User",
+      company_scope: "CRONUS UK Ltd",
+      mfa_enabled: false,
+      last_login: "2026-09-05 16:05",
+      created_at: "2026-02-01"
+    },
+    {
+      id: "usr-4",
+      username: "david.okonkwo",
+      full_name: "David Okonkwo",
+      email: "d.okonkwo@cronus.co.uk",
+      role_ids: ["PURCHASE-MGR"],
+      status: "active",
+      license_type: "Full User",
+      company_scope: "CRONUS UK Ltd",
+      mfa_enabled: true,
+      last_login: "2026-09-05 14:15",
+      created_at: "2026-02-10"
+    },
+    {
+      id: "usr-5",
+      username: "elena.rostova",
+      full_name: "Elena Rostova",
+      email: "e.rostova@cronus.co.uk",
+      role_ids: ["WMS-MGR", "MFG-PLANNER"],
+      status: "active",
+      license_type: "Full User",
+      company_scope: "CRONUS UK Ltd",
+      mfa_enabled: true,
+      last_login: "2026-09-05 19:10",
+      created_at: "2026-03-01"
+    },
+    {
+      id: "usr-6",
+      username: "prof.strang",
+      full_name: "Prof. Gilbert Strang",
+      email: "strang@mit.edu",
+      role_ids: ["UNIV-DEAN"],
+      status: "active",
+      license_type: "Full User",
+      company_scope: "ALL",
+      mfa_enabled: true,
+      last_login: "2026-09-05 20:30",
+      created_at: "2026-01-01"
+    },
+    {
+      id: "usr-7",
+      username: "pwc.auditor",
+      full_name: "PwC External Audit Team",
+      email: "audit.team@uk.pwc.com",
+      role_ids: ["AUDITOR"],
+      status: "locked",
+      license_type: "External Auditor",
+      company_scope: "CRONUS UK Ltd",
+      mfa_enabled: true,
+      last_login: "2026-08-31 11:00",
+      created_at: "2026-06-01"
+    }
+  ],
+
+  SystemRole: [
+    {
+      id: "SUPER",
+      name: "System Administrator (SUPER)",
+      description: "Unrestricted enterprise access across all legal entities, system setup, security, G/L, and operations",
+      is_system: true,
+      color: "red"
+    },
+    {
+      id: "FINANCE-MGR",
+      name: "Financial Controller / CFO",
+      description: "Full management of General Ledger, Bank Accounts, VAT Returns, Cash Flow, Budgets, and Posting",
+      is_system: true,
+      color: "emerald"
+    },
+    {
+      id: "SALES-REP",
+      name: "Sales & CRM Specialist",
+      description: "Manage customers, sales quotes, sales orders, shipments, invoices, and customer price lists",
+      is_system: true,
+      color: "blue"
+    },
+    {
+      id: "PURCHASE-MGR",
+      name: "Procurement & Payables Manager",
+      description: "Manage vendors, purchase requisitions, purchase orders, 3-way matching, and purchase bills",
+      is_system: true,
+      color: "amber"
+    },
+    {
+      id: "WMS-MGR",
+      name: "Warehouse & Logistics Manager",
+      description: "Item catalog, inventory tracking, warehouse bins, receipts, picks, physical counts, and assembly",
+      is_system: true,
+      color: "indigo"
+    },
+    {
+      id: "MFG-PLANNER",
+      name: "Manufacturing Planner",
+      description: "Production orders, bill of materials (BOMs), work centers, routings, and MRP planning worksheets",
+      is_system: true,
+      color: "purple"
+    },
+    {
+      id: "UNIV-DEAN",
+      name: "University Dean & Academic Registrar",
+      description: "Full management of MIT Student Lifecycle, Admissions, Course Majors, Gradebook, and CAP reviews",
+      is_system: true,
+      color: "rose"
+    },
+    {
+      id: "AUDITOR",
+      name: "Compliance & Read-Only Auditor",
+      description: "Read-only access across all financial ledgers, transactional journals, and audit documentation",
+      is_system: true,
+      color: "slate"
+    }
+  ],
+
+  RolePermission: [
+    { id: "p-super-all", role_id: "SUPER", module_key: "all", can_read: true, can_insert: true, can_modify: true, can_delete: true, can_execute: true },
+    { id: "p-fin-coa", role_id: "FINANCE-MGR", module_key: "chart_of_accounts", can_read: true, can_insert: true, can_modify: true, can_delete: false, can_execute: true },
+    { id: "p-fin-gj", role_id: "FINANCE-MGR", module_key: "journal_entries", can_read: true, can_insert: true, can_modify: true, can_delete: true, can_execute: true },
+    { id: "p-fin-vat", role_id: "FINANCE-MGR", module_key: "vat_returns", can_read: true, can_insert: true, can_modify: true, can_delete: false, can_execute: true },
+    { id: "p-sales-cust", role_id: "SALES-REP", module_key: "customers_sales", can_read: true, can_insert: true, can_modify: true, can_delete: false, can_execute: true },
+    { id: "p-purch-vend", role_id: "PURCHASE-MGR", module_key: "vendors_purchases", can_read: true, can_insert: true, can_modify: true, can_delete: false, can_execute: true },
+    { id: "p-wms-items", role_id: "WMS-MGR", module_key: "items_warehousing", can_read: true, can_insert: true, can_modify: true, can_delete: true, can_execute: true }
+  ],
+
+  SecurityAuditLog: [
+    { id: "sal-1", timestamp: "2026-09-05T21:40:00Z", actor: "Chaminuka Mbanje", event_type: "ADMIN_LOGIN", target: "mbanjec", details: "MFA challenge verified successfully via Microsoft Authenticator", ip_address: "192.168.0.218" },
+    { id: "sal-2", timestamp: "2026-09-05T20:15:00Z", actor: "IT Administrator", event_type: "ROLE_ASSIGNED", target: "sarah.jenkins", details: "Assigned role 'FINANCE-MGR' with company scope 'CRONUS UK Ltd'", ip_address: "192.168.0.218" },
+    { id: "sal-3", timestamp: "2026-09-05T19:00:00Z", actor: "IT Administrator", event_type: "USER_LOCKED", target: "pwc.auditor", details: "Account locked pending annual engagement renewal", ip_address: "192.168.0.218" },
+    { id: "sal-4", timestamp: "2026-09-05T17:30:00Z", actor: "IT Administrator", event_type: "PERMISSION_MODIFIED", target: "SALES-REP :: sales_invoices", details: "Revoked DELETE permission for Sales Representative group", ip_address: "192.168.0.218" }
   ]
 };
 

@@ -9,7 +9,7 @@ import {
   UserPlus, GraduationCap, BookOpenCheck, ClipboardCheck, Award,
   Workflow, Eye, Warehouse, QrCode, Factory, Calculator, Scale,
   Coins, ArrowRightLeft, ShieldCheck, Briefcase, FileCheck, Tags, Sparkles,
-  Search, SlidersHorizontal, ArrowUpRight, Landmark, Boxes
+  Search, SlidersHorizontal, ArrowUpRight, Landmark, Boxes, KeyRound
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { cn } from "@/lib/utils";
@@ -36,6 +36,12 @@ const navSections = [
         path: "/companies",
         icon: Building2,
         keywords: ["companies", "legal entities", "company", "subsidiaries", "intercompany", "business units", "multi company", "corporate structure", "new company", "add company", "create legal entity"]
+      },
+      {
+        label: "Security & Permissions",
+        path: "/security",
+        icon: KeyRound,
+        keywords: ["security", "permissions", "roles", "users", "system user", "access control", "user permissions", "role center", "mfa", "audit log"]
       }
     ]
   },
@@ -304,8 +310,19 @@ const navSections = [
     ]
   },
   {
-    label: "Approvals",
+    label: "Administration & Security",
     items: [
+      {
+        label: "User & Role Permissions",
+        path: "/permissions",
+        icon: KeyRound,
+        keywords: [
+          "permissions", "roles", "users", "it administrator", "access control",
+          "security", "rbac", "privileges", "user management", "grant permissions",
+          "permission sets", "security audit", "lock user", "crudx", "matrix",
+          "it security", "user administration", "admin"
+        ]
+      },
       {
         label: "Approval Requests",
         path: "/approvals",

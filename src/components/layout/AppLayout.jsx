@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Building2, Sparkles, Check, ChevronDown, Shield,
-  Plus, X, Globe, Layers, ArrowRight
+  Plus, X, Globe, Layers, ArrowRight, KeyRound
 } from "lucide-react";
 
 export default function AppLayout() {
@@ -175,7 +175,16 @@ export default function AppLayout() {
             </Badge>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              to="/permissions"
+              className="text-xs font-medium px-2.5 py-1 rounded-md border hover:bg-muted transition-colors flex items-center gap-1.5"
+              title="IT Administration: Manage Roles & Permissions"
+            >
+              <KeyRound className="w-3.5 h-3.5 text-primary" />
+              <span className="hidden sm:inline">Permissions</span>
+            </Link>
+
             <Link
               to="/role-center"
               className="text-xs font-medium px-2.5 py-1 rounded-md border hover:bg-muted transition-colors flex items-center gap-1.5"
