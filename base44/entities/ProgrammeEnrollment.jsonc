@@ -1,0 +1,107 @@
+{
+  "name": "ProgrammeEnrollment",
+  "type": "object",
+  "description": "Links a student to a programme. Undergraduate: max 1 active record per student. Postgraduate: multiple allowed.",
+  "properties": {
+    "student_id": {
+      "type": "string"
+    },
+    "student_name": {
+      "type": "string"
+    },
+    "student_number": {
+      "type": "string"
+    },
+    "programme_id": {
+      "type": "string"
+    },
+    "programme_code": {
+      "type": "string"
+    },
+    "programme_name": {
+      "type": "string"
+    },
+    "programme_level": {
+      "type": "string",
+      "enum": [
+        "undergraduate",
+        "postgraduate"
+      ]
+    },
+    "intake_year": {
+      "type": "string"
+    },
+    "enrollment_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "expected_completion": {
+      "type": "string",
+      "format": "date"
+    },
+    "actual_completion": {
+      "type": "string",
+      "format": "date"
+    },
+    "current_year": {
+      "type": "number",
+      "default": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "withdrawn",
+        "suspended"
+      ],
+      "default": "active"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "student_id",
+    "programme_id"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

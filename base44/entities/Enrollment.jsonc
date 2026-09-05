@@ -1,0 +1,132 @@
+{
+  "name": "Enrollment",
+  "type": "object",
+  "properties": {
+    "student_id": {
+      "type": "string"
+    },
+    "student_name": {
+      "type": "string"
+    },
+    "student_number": {
+      "type": "string"
+    },
+    "course_id": {
+      "type": "string"
+    },
+    "course_code": {
+      "type": "string"
+    },
+    "course_name": {
+      "type": "string"
+    },
+    "programme_id": {
+      "type": "string"
+    },
+    "academic_year": {
+      "type": "string"
+    },
+    "semester": {
+      "type": "string"
+    },
+    "year_level": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "enrolled",
+        "withdrawn",
+        "completed",
+        "failed",
+        "incomplete"
+      ],
+      "default": "enrolled"
+    },
+    "coursework_score": {
+      "type": "number",
+      "description": "Overall coursework score (0-100)"
+    },
+    "exam_score": {
+      "type": "number",
+      "description": "Exam score (0-100)"
+    },
+    "final_score": {
+      "type": "number",
+      "description": "Weighted final score"
+    },
+    "grade": {
+      "type": "string",
+      "description": "Letter grade: A, B, C, D, F"
+    },
+    "grade_points": {
+      "type": "number",
+      "description": "GPA points for this course"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail",
+        "distinction",
+        "merit",
+        "supplementary",
+        "pending"
+      ],
+      "default": "pending"
+    },
+    "supplementary_score": {
+      "type": "number"
+    },
+    "supplementary_result": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    }
+  },
+  "required": [
+    "student_id",
+    "course_id"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

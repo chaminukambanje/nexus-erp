@@ -1,0 +1,78 @@
+{
+  "name": "BankAccount",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "account_number": {
+      "type": "string"
+    },
+    "bank_name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "checking",
+        "savings",
+        "credit_card"
+      ],
+      "default": "checking"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "balance": {
+      "type": "number",
+      "default": 0
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

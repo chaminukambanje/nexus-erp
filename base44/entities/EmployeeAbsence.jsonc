@@ -1,0 +1,102 @@
+{
+  "name": "EmployeeAbsence",
+  "type": "object",
+  "properties": {
+    "employee_id": {
+      "type": "string"
+    },
+    "employee_name": {
+      "type": "string"
+    },
+    "absence_type": {
+      "type": "string",
+      "enum": [
+        "vacation",
+        "sick_leave",
+        "personal",
+        "maternity",
+        "paternity",
+        "bereavement",
+        "unpaid",
+        "other"
+      ],
+      "default": "vacation"
+    },
+    "from_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "to_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "days": {
+      "type": "number",
+      "default": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "approved_by": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "employee_id",
+    "absence_type",
+    "from_date",
+    "to_date"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

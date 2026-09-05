@@ -1,0 +1,143 @@
+{
+  "name": "FixedAsset",
+  "type": "object",
+  "properties": {
+    "asset_number": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "land",
+        "building",
+        "machinery",
+        "vehicle",
+        "equipment",
+        "furniture",
+        "computer",
+        "other"
+      ],
+      "default": "equipment"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "disposed",
+        "under_maintenance",
+        "fully_depreciated"
+      ],
+      "default": "active"
+    },
+    "acquisition_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "acquisition_cost": {
+      "type": "number",
+      "default": 0
+    },
+    "salvage_value": {
+      "type": "number",
+      "default": 0
+    },
+    "useful_life_years": {
+      "type": "number",
+      "default": 5
+    },
+    "depreciation_method": {
+      "type": "string",
+      "enum": [
+        "straight_line",
+        "declining_balance",
+        "units_of_production"
+      ],
+      "default": "straight_line"
+    },
+    "accumulated_depreciation": {
+      "type": "number",
+      "default": 0
+    },
+    "book_value": {
+      "type": "number",
+      "default": 0
+    },
+    "location": {
+      "type": "string"
+    },
+    "serial_number": {
+      "type": "string"
+    },
+    "vendor_id": {
+      "type": "string"
+    },
+    "vendor_name": {
+      "type": "string"
+    },
+    "gl_account_id": {
+      "type": "string"
+    },
+    "depreciation_account_id": {
+      "type": "string"
+    },
+    "disposal_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "disposal_value": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "category"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

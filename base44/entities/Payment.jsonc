@@ -1,0 +1,109 @@
+{
+  "name": "Payment",
+  "type": "object",
+  "properties": {
+    "payment_number": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "incoming",
+        "outgoing"
+      ],
+      "description": "Incoming = from customer, Outgoing = to vendor"
+    },
+    "party_type": {
+      "type": "string",
+      "enum": [
+        "customer",
+        "vendor"
+      ]
+    },
+    "party_id": {
+      "type": "string"
+    },
+    "party_name": {
+      "type": "string"
+    },
+    "reference_type": {
+      "type": "string",
+      "enum": [
+        "invoice",
+        "bill",
+        "other"
+      ]
+    },
+    "reference_id": {
+      "type": "string"
+    },
+    "reference_number": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "method": {
+      "type": "string",
+      "enum": [
+        "cash",
+        "check",
+        "bank_transfer",
+        "credit_card",
+        "other"
+      ],
+      "default": "bank_transfer"
+    },
+    "bank_account_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    }
+  },
+  "required": [
+    "type",
+    "amount",
+    "date"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

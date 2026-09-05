@@ -1,0 +1,200 @@
+{
+  "name": "Student",
+  "type": "object",
+  "properties": {
+    "student_number": {
+      "type": "string"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "date_of_birth": {
+      "type": "string",
+      "format": "date"
+    },
+    "gender": {
+      "type": "string",
+      "enum": [
+        "male",
+        "female",
+        "other",
+        "prefer_not_to_say"
+      ]
+    },
+    "nationality": {
+      "type": "string"
+    },
+    "national_id": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "applicant_id": {
+      "type": "string"
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "Link to Customer record for fees/billing"
+    },
+    "customer_number": {
+      "type": "string",
+      "description": "Denormalized customer number"
+    },
+    "undergraduate_programme_id": {
+      "type": "string",
+      "description": "Single undergraduate programme (bachelors/diploma/certificate/honours)"
+    },
+    "undergraduate_programme_name": {
+      "type": "string"
+    },
+    "postgraduate_programme_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Multiple postgraduate programme IDs (masters/phd/postgrad_diploma)"
+    },
+    "postgraduate_programme_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Denormalized postgraduate programme names"
+    },
+    "programme_id": {
+      "type": "string",
+      "description": "Primary active programme ID (kept for backwards compatibility)"
+    },
+    "programme_name": {
+      "type": "string"
+    },
+    "intake_year": {
+      "type": "string"
+    },
+    "current_year": {
+      "type": "number",
+      "default": 1
+    },
+    "current_semester": {
+      "type": "string",
+      "default": "semester_1"
+    },
+    "enrollment_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "expected_graduation": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "enrolled",
+        "pending_fees",
+        "blocked",
+        "suspended",
+        "deferred",
+        "withdrawn",
+        "graduated",
+        "excluded"
+      ],
+      "default": "pending_fees",
+      "description": "enrolled=active & fees paid; pending_fees=can attend but must pay; blocked=cannot access until fees paid; suspended=disciplinary; etc."
+    },
+    "fees_status": {
+      "type": "string",
+      "enum": [
+        "paid",
+        "partial",
+        "outstanding",
+        "overdue"
+      ],
+      "default": "outstanding"
+    },
+    "outstanding_balance": {
+      "type": "number",
+      "default": 0
+    },
+    "cumulative_gpa": {
+      "type": "number",
+      "default": 0
+    },
+    "total_credits_earned": {
+      "type": "number",
+      "default": 0
+    },
+    "emergency_contact_name": {
+      "type": "string"
+    },
+    "emergency_contact_phone": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "first_name",
+    "last_name",
+    "email"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

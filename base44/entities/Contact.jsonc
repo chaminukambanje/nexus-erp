@@ -1,0 +1,121 @@
+{
+  "name": "Contact",
+  "type": "object",
+  "properties": {
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "company": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "mobile": {
+      "type": "string"
+    },
+    "job_title": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "customer",
+        "vendor",
+        "prospect",
+        "applicant",
+        "student",
+        "other"
+      ],
+      "default": "prospect"
+    },
+    "address": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "last_interaction": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active"
+    },
+    "applicant_id": {
+      "type": "string",
+      "description": "Linked Applicant record (if this contact came from an application)"
+    },
+    "student_id": {
+      "type": "string",
+      "description": "Linked Student record (once enrolled)"
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "Linked Customer record (once enrolled)"
+    }
+  },
+  "required": [
+    "first_name",
+    "last_name"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

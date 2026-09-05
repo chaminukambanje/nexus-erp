@@ -1,0 +1,101 @@
+{
+  "name": "JournalEntry",
+  "type": "object",
+  "properties": {
+    "entry_number": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "description": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "posted",
+        "reversed"
+      ],
+      "default": "draft"
+    },
+    "lines": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string"
+          },
+          "account_name": {
+            "type": "string"
+          },
+          "debit": {
+            "type": "number",
+            "default": 0
+          },
+          "credit": {
+            "type": "number",
+            "default": 0
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "total_debit": {
+      "type": "number",
+      "default": 0
+    },
+    "total_credit": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "entry_number",
+    "date"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

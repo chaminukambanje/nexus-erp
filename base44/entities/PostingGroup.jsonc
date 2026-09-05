@@ -1,0 +1,90 @@
+{
+  "name": "PostingGroup",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Unique code identifier (e.g. DOMESTIC, EXPORT, INTERCO)"
+    },
+    "description": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "customer",
+        "vendor",
+        "both"
+      ],
+      "default": "customer",
+      "description": "Whether this group applies to customers, vendors, or both"
+    },
+    "receivables_account": {
+      "type": "string",
+      "description": "G/L account number for accounts receivable"
+    },
+    "payables_account": {
+      "type": "string",
+      "description": "G/L account number for accounts payable"
+    },
+    "payment_discount_debit_account": {
+      "type": "string",
+      "description": "G/L account for payment discount (debit side)"
+    },
+    "payment_discount_credit_account": {
+      "type": "string",
+      "description": "G/L account for payment discount (credit side)"
+    },
+    "invoice_rounding_account": {
+      "type": "string",
+      "description": "G/L account for invoice rounding differences"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "code",
+    "type"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "name": "Assessment",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "course_id": {
+      "type": "string"
+    },
+    "course_code": {
+      "type": "string"
+    },
+    "course_name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "assignment",
+        "test",
+        "project",
+        "practical",
+        "presentation",
+        "quiz",
+        "exam"
+      ],
+      "default": "assignment"
+    },
+    "academic_year": {
+      "type": "string"
+    },
+    "semester": {
+      "type": "string"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "exam_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "total_marks": {
+      "type": "number",
+      "default": 100
+    },
+    "weight_percent": {
+      "type": "number",
+      "default": 10,
+      "description": "% of coursework or final grade this contributes"
+    },
+    "description": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "upcoming",
+        "active",
+        "grading",
+        "completed"
+      ],
+      "default": "upcoming"
+    }
+  },
+  "required": [
+    "title",
+    "course_id",
+    "type"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "name": "ProgressionDecision",
+  "type": "object",
+  "properties": {
+    "student_id": {
+      "type": "string"
+    },
+    "student_name": {
+      "type": "string"
+    },
+    "student_number": {
+      "type": "string"
+    },
+    "programme_id": {
+      "type": "string"
+    },
+    "programme_name": {
+      "type": "string"
+    },
+    "academic_year": {
+      "type": "string"
+    },
+    "from_year": {
+      "type": "number"
+    },
+    "to_year": {
+      "type": "number"
+    },
+    "year_average": {
+      "type": "number"
+    },
+    "total_credits_passed": {
+      "type": "number"
+    },
+    "modules_failed": {
+      "type": "number"
+    },
+    "courses_summary": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "course_code": {
+            "type": "string"
+          },
+          "course_name": {
+            "type": "string"
+          },
+          "final_score": {
+            "type": "number"
+          },
+          "result": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "progress",
+        "repeat_year",
+        "supplementary",
+        "exclude",
+        "graduate",
+        "pending"
+      ],
+      "default": "pending"
+    },
+    "decided_by": {
+      "type": "string"
+    },
+    "decision_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "notified": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "student_id",
+    "academic_year",
+    "from_year"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

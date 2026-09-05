@@ -1,0 +1,116 @@
+{
+  "name": "Vendor",
+  "type": "object",
+  "properties": {
+    "vendor_number": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "zip_code": {
+      "type": "string"
+    },
+    "contact_person": {
+      "type": "string"
+    },
+    "payment_terms": {
+      "type": "string",
+      "enum": [
+        "net_15",
+        "net_30",
+        "net_45",
+        "net_60",
+        "due_on_receipt"
+      ],
+      "default": "net_30"
+    },
+    "balance": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "blocked"
+      ],
+      "default": "active"
+    },
+    "posting_group_id": {
+      "type": "string",
+      "description": "Reference to PostingGroup"
+    },
+    "posting_group_code": {
+      "type": "string",
+      "description": "Denormalized posting group code"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "tax_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "name": "Course",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "programme_id": {
+      "type": "string"
+    },
+    "programme_name": {
+      "type": "string"
+    },
+    "year_level": {
+      "type": "number",
+      "default": 1,
+      "description": "Which year of the programme this course is in"
+    },
+    "semester": {
+      "type": "string",
+      "enum": [
+        "semester_1",
+        "semester_2",
+        "full_year",
+        "trimester_1",
+        "trimester_2",
+        "trimester_3"
+      ],
+      "default": "semester_1"
+    },
+    "credits": {
+      "type": "number",
+      "default": 15
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "compulsory",
+        "elective",
+        "optional"
+      ],
+      "default": "compulsory"
+    },
+    "lecturer": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "pass_mark": {
+      "type": "number",
+      "default": 50
+    },
+    "coursework_weight": {
+      "type": "number",
+      "default": 40,
+      "description": "% weight of coursework in final grade"
+    },
+    "exam_weight": {
+      "type": "number",
+      "default": 60,
+      "description": "% weight of exam in final grade"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "code",
+    "name"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,153 @@
+{
+  "name": "Programme",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "faculty": {
+      "type": "string"
+    },
+    "department": {
+      "type": "string"
+    },
+    "degree_type": {
+      "type": "string",
+      "enum": [
+        "certificate",
+        "diploma",
+        "bachelors",
+        "honours",
+        "postgrad_diploma",
+        "masters",
+        "phd"
+      ],
+      "default": "bachelors",
+      "description": "certificate/diploma/bachelors/honours = undergraduate; postgrad_diploma/masters/phd = postgraduate"
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "undergraduate",
+        "postgraduate"
+      ],
+      "default": "undergraduate",
+      "description": "Derived from degree_type; undergraduate allows only 1 enrolment per student; postgraduate allows multiple"
+    },
+    "duration_value": {
+      "type": "number",
+      "default": 4,
+      "description": "Numeric duration of the programme (in the unit specified by duration_unit)"
+    },
+    "duration_unit": {
+      "type": "string",
+      "enum": [
+        "years",
+        "semesters"
+      ],
+      "default": "years",
+      "description": "Whether duration_value is measured in years or semesters"
+    },
+    "duration_years": {
+      "type": "number",
+      "default": 4,
+      "description": "Deprecated \u2014 use duration_value + duration_unit. Kept for backwards compatibility."
+    },
+    "total_credits": {
+      "type": "number",
+      "default": 120
+    },
+    "credits_per_year": {
+      "type": "number",
+      "default": 30
+    },
+    "pass_mark": {
+      "type": "number",
+      "default": 50
+    },
+    "distinction_mark": {
+      "type": "number",
+      "default": 75
+    },
+    "min_progression_average": {
+      "type": "number",
+      "default": 50
+    },
+    "max_failed_modules": {
+      "type": "number",
+      "default": 2
+    },
+    "description": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "discontinued"
+      ],
+      "default": "active"
+    },
+    "max_capacity": {
+      "type": "number",
+      "default": 100
+    },
+    "annual_fee": {
+      "type": "number",
+      "default": 0,
+      "description": "Annual tuition fee for this programme"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    }
+  },
+  "required": [
+    "code",
+    "name",
+    "degree_type"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

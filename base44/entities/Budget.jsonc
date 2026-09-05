@@ -1,0 +1,144 @@
+{
+  "name": "Budget",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "fiscal_year": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "approved",
+        "closed"
+      ],
+      "default": "draft"
+    },
+    "lines": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string"
+          },
+          "account_name": {
+            "type": "string"
+          },
+          "account_type": {
+            "type": "string"
+          },
+          "jan": {
+            "type": "number",
+            "default": 0
+          },
+          "feb": {
+            "type": "number",
+            "default": 0
+          },
+          "mar": {
+            "type": "number",
+            "default": 0
+          },
+          "apr": {
+            "type": "number",
+            "default": 0
+          },
+          "may": {
+            "type": "number",
+            "default": 0
+          },
+          "jun": {
+            "type": "number",
+            "default": 0
+          },
+          "jul": {
+            "type": "number",
+            "default": 0
+          },
+          "aug": {
+            "type": "number",
+            "default": 0
+          },
+          "sep": {
+            "type": "number",
+            "default": 0
+          },
+          "oct": {
+            "type": "number",
+            "default": 0
+          },
+          "nov": {
+            "type": "number",
+            "default": 0
+          },
+          "dec": {
+            "type": "number",
+            "default": 0
+          },
+          "total": {
+            "type": "number",
+            "default": 0
+          }
+        }
+      }
+    },
+    "total_budget": {
+      "type": "number",
+      "default": 0
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    }
+  },
+  "required": [
+    "name",
+    "fiscal_year"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
