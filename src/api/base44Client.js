@@ -89,8 +89,10 @@ const entitiesProxy = new Proxy(rawClient.entities || {}, {
     };
   }
 });
-
-export const base44 = {
-  ...rawClient,
-  entities: entitiesProxy
-};
+// Avoid object spreading rawClient because evaluating rawClient.asServiceRole throws an error when serviceToken is omitted
+export const base44 = new Proxy(rawClient, {
+  get(target, prop, receiver) {
+    if (prop === "entities") return entitiesProxy;
+    return Reflect.get(target, prop, receiver);
+  }
+});
