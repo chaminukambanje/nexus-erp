@@ -1,5 +1,8 @@
 // Universal Enterprise Data Engine for NexusERP (Dynamics 365 Business Central & F&O Equivalent)
 // Provides complete offline-capable, unrestricted persistence with full seed data matching CRONUS International Ltd.
+import { BC_SAMPLE_DATA } from "./bcSampleData";
+
+export { BC_SAMPLE_DATA };
 
 const STORAGE_PREFIX = "nexuserp_data_";
 const ACTIVE_COMPANY_KEY = "nexuserp_active_company";
@@ -70,12 +73,9 @@ export function createLegalEntity({ name, code, currency, country, logo, copySet
   list.push(newCompany);
   localStorage.setItem(COMPANIES_STORAGE_KEY, JSON.stringify(list));
 
-  // If template is specified, copy baseline configuration entities into new company's data namespace
+  // If template is specified, copy baseline configuration and master entities into new company's data namespace
   if (copySetupFrom && copySetupFrom !== "none" && typeof window !== "undefined") {
-    const configEntities = [
-      "Dimension", "DimensionValue", "Currency", "WarehouseLocation",
-      "WarehouseBin", "PostingGroup", "CustomerPriceList"
-    ];
+    const configEntities = Object.keys(INITIAL_DATA);
     configEntities.forEach(entity => {
       const sourceKey = `${STORAGE_PREFIX}${copySetupFrom}_${entity}`;
       const targetKey = `${STORAGE_PREFIX}${id}_${entity}`;
@@ -117,47 +117,29 @@ export function deleteLegalEntity(companyId) {
   return filtered;
 }
 
-// Initial seed data matching Dynamics 365 Business Central standards
-const INITIAL_DATA = {
-  // Dimensions
-  Dimension: [
-    { id: "dim-1", code: "DEPARTMENT", name: "Department", description: "Global Dimension 1 - Organizational Unit", is_global: true, global_num: 1, values_count: 5, mandatory: true },
-    { id: "dim-2", code: "CUSTOMERGROUP", name: "Customer Group", description: "Global Dimension 2 - Market Segment", is_global: true, global_num: 2, values_count: 4, mandatory: false },
-    { id: "dim-3", code: "PROJECT", name: "Project / Job", description: "Shortcut Dimension 3 - Job Code", is_global: false, global_num: 3, values_count: 6, mandatory: false },
-    { id: "dim-4", code: "AREA", name: "Geographic Area", description: "Shortcut Dimension 4 - Sales Territory", is_global: false, global_num: 4, values_count: 4, mandatory: false },
-    { id: "dim-5", code: "COSTCENTER", name: "Cost Center", description: "Shortcut Dimension 5 - Cost Accounting", is_global: false, global_num: 5, values_count: 5, mandatory: false }
-  ],
-  DimensionValue: [
-    { id: "dv-1", dimension_code: "DEPARTMENT", code: "SALES", name: "Sales & Marketing", total_budget: 150000, active: true },
-    { id: "dv-2", dimension_code: "DEPARTMENT", code: "PROD", name: "Production & Operations", total_budget: 450000, active: true },
-    { id: "dv-3", dimension_code: "DEPARTMENT", code: "ADMIN", name: "Administration & Finance", total_budget: 120000, active: true },
-    { id: "dv-4", dimension_code: "DEPARTMENT", code: "ENG", name: "R&D / Engineering", total_budget: 280000, active: true },
-    { id: "dv-5", dimension_code: "DEPARTMENT", code: "LOG", name: "Warehouse & Logistics", total_budget: 95000, active: true },
-    { id: "dv-6", dimension_code: "CUSTOMERGROUP", code: "ENTERPRISE", name: "Enterprise Accounts", total_budget: 0, active: true },
-    { id: "dv-7", dimension_code: "CUSTOMERGROUP", code: "SMB", name: "Small & Medium Business", total_budget: 0, active: true },
-    { id: "dv-8", dimension_code: "CUSTOMERGROUP", code: "PUBLIC", name: "Government & Education", total_budget: 0, active: true },
-    { id: "dv-9", dimension_code: "CUSTOMERGROUP", code: "RETAIL", name: "Direct Consumer / Retail", total_budget: 0, active: true },
-    { id: "dv-10", dimension_code: "AREA", code: "NORTH", name: "Northern Territory", total_budget: 0, active: true },
-    { id: "dv-11", dimension_code: "AREA", code: "SOUTH", name: "Southern Territory", total_budget: 0, active: true },
-    { id: "dv-12", dimension_code: "AREA", code: "INTL", name: "International Markets", total_budget: 0, active: true }
-  ],
+// Interactive utility to import / re-sync sample data from Microsoft Dynamics 365 Business Central Server (BC_DemoDB / CRONUS UK Ltd_)
+export function importBCServerSampleData(targetCompanyId = null, force = true) {
+  const companyId = targetCompanyId || getActiveCompany().id;
+  let totalCount = 0;
+  if (typeof window !== "undefined") {
+    for (const [entityName, records] of Object.entries(INITIAL_DATA)) {
+      const storageKey = `${STORAGE_PREFIX}${companyId}_${entityName}`;
+      if (force || !localStorage.getItem(storageKey)) {
+        localStorage.setItem(storageKey, JSON.stringify(records));
+        totalCount += records.length;
+        window.dispatchEvent(new CustomEvent(`datastore_${entityName}_updated`, { detail: records }));
+      }
+    }
+    window.dispatchEvent(new CustomEvent("bc_sample_data_imported", { detail: { companyId, totalCount } }));
+  }
+  return { success: true, count: totalCount, companyId };
+}
 
-  // Currencies
-  Currency: [
-    { id: "curr-1", code: "GBP", name: "British Pound Sterling", symbol: "£", exchange_rate: 1.0, is_base: true, last_adjusted: "2026-09-01" },
-    { id: "curr-2", code: "USD", name: "US Dollar", symbol: "$", exchange_rate: 1.285, is_base: false, last_adjusted: "2026-09-05" },
-    { id: "curr-3", code: "EUR", name: "Euro", symbol: "€", exchange_rate: 1.172, is_base: false, last_adjusted: "2026-09-05" },
-    { id: "curr-4", code: "JPY", name: "Japanese Yen", symbol: "¥", exchange_rate: 189.4, is_base: false, last_adjusted: "2026-09-04" },
-    { id: "curr-5", code: "CHF", name: "Swiss Franc", symbol: "CHF", exchange_rate: 1.121, is_base: false, last_adjusted: "2026-09-03" }
-  ],
+// Initial seed data matching Dynamics 365 Business Central standards, seeded directly from SQL Server BC_DemoDB (CRONUS UK Ltd_)
+export const INITIAL_DATA = {
+  ...BC_SAMPLE_DATA,
 
-  // Warehouses & Locations
-  WarehouseLocation: [
-    { id: "loc-1", code: "MAIN", name: "Main Distribution Center", address: "100 Logistics Way, Birmingham", bins_active: true, total_bins: 18, is_default: true, phone: "+44 121 555 0100" },
-    { id: "loc-2", code: "WEST", name: "Bristol Regional Depot", address: "45 Avonmouth Docks, Bristol", bins_active: true, total_bins: 8, is_default: false, phone: "+44 117 555 0142" },
-    { id: "loc-3", code: "PROD-PLANT", name: "Coventry Manufacturing Plant", address: "12 Industrial Park, Coventry", bins_active: true, total_bins: 12, is_default: false, phone: "+44 24 7655 0199" },
-    { id: "loc-4", code: "TRANSIT", name: "Inter-company In-Transit", address: "Virtual Logistics Corridor", bins_active: false, total_bins: 0, is_default: false, phone: "N/A" }
-  ],
+  // Warehouses Bins & Advanced Routing
   WarehouseBin: [
     { id: "bin-1", location_code: "MAIN", zone: "RECEIVING", code: "REC-01", description: "Inbound Staging Bay 1", max_weight_kg: 5000, current_items: 4 },
     { id: "bin-2", location_code: "MAIN", zone: "STORAGE", code: "RACK-A-01", description: "Aisle A Tier 1 High Velocity", max_weight_kg: 2000, current_items: 12 },
@@ -289,7 +271,14 @@ export class EnterpriseDataStore {
       return seed;
     }
     try {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      // If partition exists but is empty, and authentic initial seed data exists, populate it!
+      if (Array.isArray(parsed) && parsed.length === 0 && (INITIAL_DATA[this.entityName] || []).length > 0) {
+        const seed = INITIAL_DATA[this.entityName];
+        localStorage.setItem(key, JSON.stringify(seed));
+        return seed;
+      }
+      return parsed;
     } catch {
       return INITIAL_DATA[this.entityName] || [];
     }
@@ -349,6 +338,20 @@ export class EnterpriseDataStore {
     items.unshift(newRecord);
     this.saveAll(items);
     return newRecord;
+  }
+
+  async bulkCreate(records) {
+    const items = this.getAll();
+    const list = Array.isArray(records) ? records : [records];
+    const newItems = list.map((data, idx) => ({
+      ...data,
+      id: data.id || `rec_${Date.now()}_${idx}_${Math.random().toString(36).slice(2, 7)}`,
+      created_date: data.created_date || new Date().toISOString(),
+      updated_date: new Date().toISOString()
+    }));
+    const combined = [...newItems, ...items];
+    this.saveAll(combined);
+    return newItems;
   }
 
   async update(id, data) {

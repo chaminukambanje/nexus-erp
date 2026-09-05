@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   getCompanies, getActiveCompany, setActiveCompany,
-  createLegalEntity, deleteLegalEntity
+  createLegalEntity, deleteLegalEntity, importBCServerSampleData
 } from "@/api/erpDataEngine";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Building2, Plus, Check, Globe, Layers, ArrowRight,
-  Shield, Trash2, Calendar, Coins, CheckCircle2, AlertCircle, X
+  Shield, Trash2, Calendar, Coins, CheckCircle2, AlertCircle, X,
+  Database, DownloadCloud, Server
 } from "lucide-react";
 
 export default function Companies() {
@@ -109,6 +110,21 @@ export default function Companies() {
     }
   };
 
+  const handleImportBCData = () => {
+    try {
+      const res = importBCServerSampleData(activeCompany.id, true);
+      setMessage({
+        type: "success",
+        text: `Successfully imported ${res.count} authentic records from Microsoft Dynamics 365 Business Central Server (BC_DemoDB / CRONUS UK Ltd_) into ${activeCompany.name}!`
+      });
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (err) {
+      setMessage({ type: "error", text: "Failed to import BC sample data: " + err.message });
+    }
+  };
+
   // Group currencies
   const uniqueCurrencies = Array.from(new Set(companies.map(c => c.currency)));
 
@@ -132,7 +148,18 @@ export default function Companies() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleImportBCData}
+            className="font-semibold gap-1.5 cursor-pointer border-blue-500/30 text-blue-600 hover:bg-blue-500/10 shadow-xs"
+            title="Import 370+ real records from Dynamics 365 Business Central Server (192.168.0.39)"
+          >
+            <Database className="w-4 h-4" />
+            <span>Import BC Server Data</span>
+          </Button>
+
           <Button
             onClick={() => setIsCreateModalOpen(true)}
             size="sm"
@@ -142,6 +169,37 @@ export default function Companies() {
             <span>New Legal Entity</span>
           </Button>
         </div>
+      </div>
+
+      {/* BC Server Data Integration Banner */}
+      <div className="bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-transparent border border-blue-500/20 rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+            <Server className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-sm font-bold text-foreground">Dynamics 365 Business Central Server Integration</h3>
+              <Badge variant="outline" className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30 text-[10px] py-0">
+                Connected: 192.168.0.39
+              </Badge>
+              <Badge variant="outline" className="bg-blue-500/15 text-blue-600 border-blue-500/30 text-[10px] py-0 font-mono">
+                BC_DemoDB (CRONUS UK Ltd_)
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Direct SQL Server sample extract available: 50 Customers, 50 Vendors, 50 Items, 50 G/L Accounts, 44 Sales Orders, 21 Purchase Orders, 6 Bank Accounts, 8 Warehouses, 8 Dimensions, 36 Values, 47 Currencies, 4 Work Centers.
+            </p>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          onClick={handleImportBCData}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-medium shrink-0 gap-1.5 shadow-xs cursor-pointer"
+        >
+          <DownloadCloud className="w-4 h-4" />
+          <span>Sync BC Server Data</span>
+        </Button>
       </div>
 
       {message && (

@@ -85,6 +85,16 @@ const entitiesProxy = new Proxy(rawClient.entities || {}, {
         } catch (err) {
           return localStore.delete(id);
         }
+      },
+      async bulkCreate(records) {
+        try {
+          if (rawEntity && typeof rawEntity.bulkCreate === "function") {
+            return await rawEntity.bulkCreate(records);
+          }
+          return localStore.bulkCreate(records);
+        } catch (err) {
+          return localStore.bulkCreate(records);
+        }
       }
     };
   }
