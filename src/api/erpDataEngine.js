@@ -305,6 +305,19 @@ export const INITIAL_DATA = {
   // IT Security, Users & Permissions
   SystemUser: [
     {
+      id: "usr-bc-admin",
+      username: "bc-server\\administrator",
+      full_name: "BC-SERVER Enterprise Administrator",
+      email: "administrator@npcsolutions.co.uk",
+      role_ids: ["SUPER"],
+      status: "active",
+      license_type: "Full User (Unrestricted Enterprise)",
+      company_scope: "ALL",
+      mfa_enabled: true,
+      last_login: "2026-09-06 14:10",
+      created_at: "2026-01-01"
+    },
+    {
       id: "usr-1",
       username: "mbanjec",
       full_name: "Chaminuka Mbanje",
@@ -467,6 +480,7 @@ export const INITIAL_DATA = {
   ],
 
   SecurityAuditLog: [
+    { id: "sal-0", timestamp: "2026-09-06T14:10:00Z", actor: "bc-server\\administrator", event_type: "UNRESTRICTED_LIMITS_APPLIED", target: "BC-SERVER :: BC250 Instance", details: "Removed database size limits (UNLIMITED), max upload size (2047MB), max OData body (2047MB), codeunit execution tracing enabled, UI license element hiding disabled (None), and full cross-legal-entity SUPER scope assigned.", ip_address: "192.168.0.39" },
     { id: "sal-1", timestamp: "2026-09-05T21:40:00Z", actor: "Chaminuka Mbanje", event_type: "ADMIN_LOGIN", target: "mbanjec", details: "MFA challenge verified successfully via Microsoft Authenticator", ip_address: "192.168.0.218" },
     { id: "sal-2", timestamp: "2026-09-05T20:15:00Z", actor: "IT Administrator", event_type: "ROLE_ASSIGNED", target: "sarah.jenkins", details: "Assigned role 'FINANCE-MGR' with company scope 'CRONUS UK Ltd'", ip_address: "192.168.0.218" },
     { id: "sal-3", timestamp: "2026-09-05T19:00:00Z", actor: "IT Administrator", event_type: "USER_LOCKED", target: "pwc.auditor", details: "Account locked pending annual engagement renewal", ip_address: "192.168.0.218" },

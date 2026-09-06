@@ -835,6 +835,7 @@ export default function SecurityPermissions() {
                 onChange={e => setUserForm({ ...userForm, license_type: e.target.value })}
                 className="w-full text-xs rounded-md border border-input bg-background px-3 py-2"
               >
+                <option value="Full User (Unrestricted Enterprise)">Full User (Unrestricted Enterprise)</option>
                 <option value="Full User">Full User (Business Manager)</option>
                 <option value="Team Member">Team Member (Light User)</option>
                 <option value="Internal Administrator">Internal Administrator</option>
