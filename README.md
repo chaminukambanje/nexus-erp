@@ -51,6 +51,26 @@
   * 🇺🇸 **Contoso US Inc.** (USD)
   * 🇪🇺 **Fabrikam Europe BV** (EUR)
 
+### 7. Higher Education & University Lifecycle (MIT Model)
+* **Full Student Lifecycle**: End-to-end management spanning *Prospect → Applicant → Enrolled → In Good Standing / Probation → Degree Conferred → Active Alumni*.
+* **Academic Programmes & Degree Audits**: Undergraduate, Master's, and Doctoral degrees with credit requirements, core courses, electives, and GPA calculation.
+* **Course Catalog & Registration**: Prerequisite checks, term-based enrollment, waitlists, and schedule conflicts.
+* **Student Records & Transcripts**: Automated GPA calculation, academic standing evaluation, probation triggers, and official transcript generation.
+* **Student Financial Services**: Tuition billing, scholarship allocation, fee adjustments, and student ledger integration with General Ledger.
+* **Graduation & Alumni Registry**: Degree certification, graduation clearance, honours designation, and alumni career tracking.
+
+### 8. IT Administration & Security Matrix (CRUDX)
+* **Granular Permission Matrix**: Role-based and user-level permissions control across all ERP entities with full **CRUDX** rights (Create, Read, Update, Delete, Execute).
+* **Role Provisioning**: Pre-configured system roles (*System Administrator*, *Financial Controller*, *Sales Agent*, *Warehouse Lead*, *Auditor*, *Registrar*) with custom role builder.
+* **User Management**: Direct user onboarding, multi-factor authentication policies, legal entity access scoping, and session termination.
+* **Security Audit Logs**: Comprehensive immutable trail of access, role modifications, and privilege escalations.
+
+### 9. Enhanced Navigation & Enterprise Usability
+* **Real-Time Global Search**: Searchable left navigation filtering by module, sub-menu, or specific business entity.
+* **Dynamic Legal Entity Provisioning**: Create new legal entities on-the-fly with template data cloning and distinct base currencies.
+* **Microsoft Dynamics 365 BC Sample Data**: Fully pre-seeded with Microsoft BC_DemoDB sample datasets (customers, vendors, items, and chart of accounts).
+* **Cloudflare Zero Trust Integration**: Fully accessible securely over public Cloudflare Tunnel at [https://nexus.npcsolutions.co.uk](https://nexus.npcsolutions.co.uk).
+
 ---
 
 ## 🐳 Quick Start with Docker
