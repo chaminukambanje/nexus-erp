@@ -151,6 +151,40 @@ nexus-erp/
 
 ---
 
+## 🏢 Hybrid Dynamics 365 Business Central Infrastructure & Domain Integration
+
+NexusERP operates in concert with an enterprise Microsoft Dynamics 365 Business Central dual-instance deployment on Windows Server 2025:
+
+### 1. Active Directory Domain Trust
+* **Domain Forest / Realm**: `npcsolutions.co.za` (NetBIOS: `NPCSOLUTIONS`)
+* **BC Host**: `192.168.0.39` (`BC-SERVER.npcsolutions.co.za`, Windows Server 2025 Datacenter)
+* **Domain Controllers**:
+  * Primary DC: `192.168.0.125` (`DC-01.npcsolutions.co.za`)
+  * Secondary DC: `192.168.0.133` (`DC-02.npcsolutions.co.za`)
+* **Secure Channel Status**: Validated (`0x0 NERR_Success`), full AD Kerberos & NTLM trust established.
+
+### 2. Dual Business Central Instances
+* **Modern Web Client (v25.0)**:
+  * Service Instance: `MicrosoftDynamicsNavServer$BC250`
+  * Local Endpoint: `http://192.168.0.39:8080/BC250/`
+  * Public Endpoint: `https://bc.npcsolutions.co.uk/BC250/`
+* **Spring Release Web Client (v14.0)**:
+  * Service Instance: `MicrosoftDynamicsNavServer$BC140`
+  * Local Endpoint: `http://192.168.0.39:8080/BC140/`
+  * Public Endpoint: `https://bc.npcsolutions.co.uk/BC140/`
+* **Database Backend**: SQL Server instance `MSSQL$BCDEMO` with `BC_DemoDB` database.
+
+### 3. Provisioned Enterprise Accounts
+* `NPCSOLUTIONS\MBANJEC`: Enterprise Super User (`SUPER` role across BC250 and BC140).
+* `NPCSOLUTIONS\ADMINISTRATOR`: Domain Admin Super User (`SUPER` role across BC250 and BC140).
+* `BC-SERVER\ADMINISTRATOR`: Local Super User.
+
+### 4. Edge Reverse Proxy & Cloudflare Zero Trust Routing
+* **Reverse Proxy**: Dockerized Nginx proxy (`bc-nginx-proxy`) on host `192.168.0.218:8097` with NTLM challenge-response pass-through (`Authorization` / `WWW-Authenticate`) and buffer sizing for Dynamics BC payload streaming.
+* **Public Tunnel**: Cloudflare Zero Trust ingress mapping `bc.npcsolutions.co.uk` -> `127.0.0.1:8097`, providing verified HTTPS 200 access worldwide.
+
+---
+
 ## 📄 License & Restrictions
 
 * **License**: Unrestricted Enterprise Edition.

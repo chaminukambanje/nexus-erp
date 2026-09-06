@@ -305,6 +305,32 @@ export const INITIAL_DATA = {
   // IT Security, Users & Permissions
   SystemUser: [
     {
+      id: "usr-bc-domain-mbanjec",
+      username: "npcsolutions\\mbanjec",
+      full_name: "Chaminuka Munashe Mbanje (Domain Admin)",
+      email: "mbanjec@npcsolutions.co.uk",
+      role_ids: ["SUPER"],
+      status: "active",
+      license_type: "Full User (Unrestricted Enterprise)",
+      company_scope: "ALL",
+      mfa_enabled: true,
+      last_login: "2026-09-06 18:20",
+      created_at: "2026-01-01"
+    },
+    {
+      id: "usr-bc-domain-admin",
+      username: "npcsolutions\\administrator",
+      full_name: "NPCSOLUTIONS Enterprise Domain Administrator",
+      email: "administrator@npcsolutions.co.za",
+      role_ids: ["SUPER"],
+      status: "active",
+      license_type: "Full User (Unrestricted Enterprise)",
+      company_scope: "ALL",
+      mfa_enabled: true,
+      last_login: "2026-09-06 18:18",
+      created_at: "2026-01-01"
+    },
+    {
       id: "usr-bc-admin",
       username: "bc-server\\administrator",
       full_name: "BC-SERVER Enterprise Administrator",
@@ -480,6 +506,9 @@ export const INITIAL_DATA = {
   ],
 
   SecurityAuditLog: [
+    { id: "sal-bc-verify", timestamp: "2026-09-06T18:18:00Z", actor: "npcsolutions\\mbanjec", event_type: "ENDPOINT_VERIFICATION", target: "BC250 & BC140 Dual Endpoints", details: "Verified end-to-end Windows / NTLM authentication with HTTP 200 OK across both Microsoft Dynamics 365 Business Central v25.0 (modern) and v14.0 (Spring release) via reverse proxy and public Cloudflare tunnels.", ip_address: "192.168.0.39" },
+    { id: "sal-bc-ad-super", timestamp: "2026-09-06T18:15:00Z", actor: "npcsolutions\\administrator", event_type: "ROLE_ASSIGNED", target: "NPCSOLUTIONS\\mbanjec & NPCSOLUTIONS\\administrator", details: "Provisioned domain accounts in BC250 and BC140 server instances and assigned unrestricted enterprise SUPER permissions.", ip_address: "192.168.0.39" },
+    { id: "sal-bc-domain-join", timestamp: "2026-09-06T18:05:00Z", actor: "Domain Administrator", event_type: "DOMAIN_JOIN_VALIDATED", target: "BC-SERVER (192.168.0.39)", details: "Validated Active Directory domain membership in npcsolutions.co.za with secure channel trust to DC-01 (192.168.0.125) and DC-02 (192.168.0.133), and aligned DNS client server resolvers.", ip_address: "192.168.0.125" },
     { id: "sal-0", timestamp: "2026-09-06T14:10:00Z", actor: "bc-server\\administrator", event_type: "UNRESTRICTED_LIMITS_APPLIED", target: "BC-SERVER :: BC250 Instance", details: "Removed database size limits (UNLIMITED), max upload size (2047MB), max OData body (2047MB), codeunit execution tracing enabled, UI license element hiding disabled (None), and full cross-legal-entity SUPER scope assigned.", ip_address: "192.168.0.39" },
     { id: "sal-1", timestamp: "2026-09-05T21:40:00Z", actor: "Chaminuka Mbanje", event_type: "ADMIN_LOGIN", target: "mbanjec", details: "MFA challenge verified successfully via Microsoft Authenticator", ip_address: "192.168.0.218" },
     { id: "sal-2", timestamp: "2026-09-05T20:15:00Z", actor: "IT Administrator", event_type: "ROLE_ASSIGNED", target: "sarah.jenkins", details: "Assigned role 'FINANCE-MGR' with company scope 'CRONUS UK Ltd'", ip_address: "192.168.0.218" },
